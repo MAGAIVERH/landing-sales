@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="64" viewBox="0 0 520 64" fill="none" role="img" aria-label="Minha Plataforma">
+  <defs>
+    <linearGradient id="mp_g" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4F6BFF"/>
+      <stop offset="1" stop-color="#2F45FF"/>
+    </linearGradient>
+    <linearGradient id="mp_s" x1="0" y1="0" x2="520" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4F6BFF"/>
+      <stop offset="1" stop-color="#2F45FF"/>
+    </linearGradient>
+    <filter id="mp_shadow" x="-20%" y="-40%" width="140%" height="180%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#2F45FF" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- Icon -->
+  <g transform="translate(0,0)" filter="url(#mp_shadow)">
+    <rect x="6" y="6" width="52" height="52" rx="16" fill="url(#mp_g)"/>
+    <!-- Circuit lines -->
+    <path d="M18 22h14c3 0 5-2 5-5v-2" stroke="rgba(255,255,255,0.85)" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M18 32h18c3 0 5 2 5 5v2" stroke="rgba(255,255,255,0.85)" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M18 42h10" stroke="rgba(255,255,255,0.85)" stroke-width="2.2" stroke-linecap="round"/>
+
+    <!-- Nodes -->
+    <circle cx="18" cy="22" r="2.2" fill="white" opacity="0.95"/>
+    <circle cx="18" cy="32" r="2.2" fill="white" opacity="0.95"/>
+    <circle cx="18" cy="42" r="2.2" fill="white" opacity="0.95"/>
+    <circle cx="37" cy="13" r="2.2" fill="white" opacity="0.95"/>
+    <circle cx="41" cy="49" r="2.2" fill="white" opacity="0.95"/>
+
+    <!-- Stylized "M" -->
+    <path d="M28 41V23l6 10 6-10v18" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g transform="translate(76, 0)">
+    <text x="0" y="40"
+      font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial"
+      font-size="26" font-weight="800" letter-spacing="-0.5"
+      fill="url(#mp_s)">
+      Minha <tspan font-weight="900">Plataforma</tspan>
+    </text>
+    <!-- <text x="2" y="56"
+      font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial"
+      font-size="12" font-weight="600" letter-spacing="0.6"
+      fill="rgba(17, 24, 39, 0.55)">
+      SOLUÇÕES DIGITAIS • AUTOMAÇÃO • PAGAMENTOS
+    </text> -->
+  </g>
+</svg>
