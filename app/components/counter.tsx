@@ -82,7 +82,7 @@ export const Counter = ({
   }, [baseValue, dailyIncrement]);
 
   return (
-    <p ref={ref} className='text-4xl font-semibold text-white transition-all'>
+    <p ref={ref} className='text-4xl font-semibold text-primary transition-all'>
       {value}
       {suffix}
     </p>
