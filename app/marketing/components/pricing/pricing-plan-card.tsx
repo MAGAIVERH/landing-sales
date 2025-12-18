@@ -34,7 +34,7 @@ export const PricingPlanCard = ({ plan }: { plan: Plan }) => {
         <div className='text-4xl font-semibold tracking-tight'>
           {plan.price}
         </div>
-        <span className='pb-1 text-sm text-muted-foreground'>
+        <span className='pb-1 text-xs text-muted-foreground'>
           {plan.priceHint}
         </span>
       </div>
