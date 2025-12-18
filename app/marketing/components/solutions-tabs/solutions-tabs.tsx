@@ -13,7 +13,7 @@ export const SolutionsTabs = () => {
   const first = USE_CASES[0]?.id ?? 'agenda';
 
   return (
-    <Section id='solucoes' className='bg-primary py-14 md:py-20'>
+    <Section id='solucoes' className='bg-primary py-14 md:py-16'>
       <div className='mx-auto max-w-6xl px-6'>
         <div className='text-center text-primary-foreground'>
           <Badge className='rounded-full bg-primary-foreground/10 px-3 py-1 text-xs font-medium text-primary-foreground'>

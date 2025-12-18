@@ -8,7 +8,7 @@ import { ShowcasePreview } from './showcase-preview';
 
 export const Showcase = () => {
   return (
-    <Section className='py-8 md:py-14'>
+    <Section className='py-4 md:py-10'>
       <div className='mx-auto max-w-6xl px-6'>
         <div className='grid gap-10 md:grid-cols-2 md:items-center'>
           {/* Copy */}

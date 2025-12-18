@@ -7,7 +7,7 @@ import { TestimonialsCard } from './testimonials-card';
 
 export const Testimonials = () => {
   return (
-    <Section id='depoimentos' className='bg-primary py-16 md:py-16'>
+    <Section id='depoimentos' className='bg-primary py-12 md:py-14'>
       <div className='mx-auto max-w-6xl px-6'>
         <div className='grid gap-10 lg:grid-cols-2 lg:items-center'>
           {/* Copy */}

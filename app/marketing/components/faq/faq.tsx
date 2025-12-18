@@ -9,7 +9,7 @@ import { FaqCta } from './faq-cta';
 
 export const FAQ = () => {
   return (
-    <Section id='faq' className='bg-background py-16 md:py-10'>
+    <Section id='faq' className='bg-background py-4 md:py-8'>
       <div className='mx-auto max-w-6xl px-6'>
         <FaqHeader />
 

@@ -27,7 +27,7 @@ export const SocialProof = () => {
   return (
     <Section
       id='social-proof'
-      className='relative overflow-hidden bg-primary text-primary-foreground pt-14 pb-28 md:py-20 '
+      className='relative overflow-hidden bg-primary text-primary-foreground pt-14 pb-28 md:py-16 py-14'
     >
       {/* decoração */}
       <div className='pointer-events-none absolute inset-0'>

@@ -9,7 +9,7 @@ import { PricingNote } from './pricing-note';
 
 export const Pricing = () => {
   return (
-    <Section id='precos' className='bg-primary py-16 md:py-20'>
+    <Section id='precos' className='bg-primary py-12 md:py-16'>
       <div className='mx-auto max-w-6xl px-6'>
         <PricingHeader />
         <PricingPlans plans={PLANS} />

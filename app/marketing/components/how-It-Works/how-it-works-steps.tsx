@@ -5,11 +5,11 @@ import type { Step } from './how-it-works.types';
 
 export const HowItWorksSteps = ({ steps }: { steps: Step[] }) => {
   return (
-    <div className='mt-10 grid gap-4 md:grid-cols-3 md:gap-6'>
+    <div className='mt-8 grid gap-6 md:grid-cols-3 md:gap-6'>
       {steps.map((s) => (
         <Card
           key={s.number}
-          className='rounded-2xl border-border bg-background/95 p-2 shadow-sm backdrop-blur md:p-4'
+          className='rounded-2xl border-border bg-background/95 p-4 shadow-sm backdrop-blur md:p-4 '
         >
           <div className='flex items-start justify-between gap-2'>
             <div className='inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary'>

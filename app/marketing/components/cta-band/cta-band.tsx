@@ -9,7 +9,7 @@ import { Section } from '../section';
 
 export const CtaBand = () => {
   return (
-    <Section className='bg-primary py-16 md:py-16'>
+    <Section className='bg-primary py-10 md:py-12'>
       <div className='mx-auto max-w-6xl px-6 text-center text-primary-foreground'>
         <h2 className='text-3xl font-semibold tracking-tight md:text-4xl'>
           Chega de perder tempo com sistemas complicados

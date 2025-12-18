@@ -9,7 +9,7 @@ import { HowItWorksPractice } from './how-it-works-practice';
 
 export const HowItWorks = () => {
   return (
-    <Section id='como-funciona' className='bg-background py-16 md:py-20'>
+    <Section id='como-funciona' className='bg-background py-4 md:py-8'>
       <div className='mx-auto max-w-6xl px-6'>
         {/* Cabeçalho */}
         <HowItWorksHeader />

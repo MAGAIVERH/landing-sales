@@ -24,7 +24,7 @@ export const SocialProofPreview = ({
           </p>
         </div>
 
-        <span className='w-fit max-w-[120px] rounded-full bg-muted px-3 py-2 text-center text-xs font-medium leading-tight md:max-w-none'>
+        <span className='w-fit max-w-30 rounded-full bg-muted px-3 py-2 text-center text-xs font-medium leading-tight md:max-w-none'>
           Clique nos segmentos
         </span>
       </div>
