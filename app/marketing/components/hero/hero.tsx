@@ -3,9 +3,10 @@
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Section } from '../section';
 import { Badge } from '@/components/ui/badge';
+
+import { HeroLeadForm } from './hero-lead-form';
 
 export const Hero = () => {
   return (
@@ -93,26 +94,8 @@ export const Hero = () => {
               </div>
 
               <div className='mt-6 space-y-4'>
-                <div>
-                  <p className='mb-2 text-sm font-medium'>Nome completo</p>
-                  <Input placeholder='Digite seu nome completo' />
-                </div>
-
-                <div>
-                  <p className='mb-2 text-sm font-medium'>
-                    E-mail profissional
-                  </p>
-                  <Input type='email' placeholder='Digite seu melhor e-mail' />
-                </div>
-
-                <div>
-                  <p className='mb-2 text-sm font-medium'>WhatsApp</p>
-                  <Input placeholder='(00) 000000000' />
-                </div>
-
-                <Button className='w-full bg-primary text-primary-foreground hover:bg-primary/90'>
-                  Avançar para próximo passo
-                </Button>
+                {/* FORM SHADCN + ZOD */}
+                <HeroLeadForm />
 
                 <div className='flex items-center justify-between gap-3 text-xs text-muted-foreground'>
                   <span>Avaliação sem compromisso</span>
