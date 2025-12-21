@@ -4,19 +4,23 @@ import Image from 'next/image';
 
 import type { ShowcaseSlide } from './showcase.types';
 
-export const ShowcasePhoneCarousel = ({
-  slides,
-}: {
-  slides: ShowcaseSlide[];
-}) => {
+type Props = {
+  slides?: ShowcaseSlide[];
+};
+
+export const ShowcasePhoneCarousel = ({ slides = [] }: Props) => {
+  if (slides.length === 0) {
+    return null;
+  }
+
   return (
     <div className='mx-auto w-full max-w-64'>
-      <div className='relative overflow-hidden rounded-3xl '>
+      <div className='relative overflow-hidden rounded-3xl'>
         {/* carrossel 1 por vez */}
         <div className='flex snap-x snap-mandatory overflow-x-auto scroll-smooth [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
           {slides.map((item, idx) => (
             <div
-              key={item.src}
+              key={`${item.src}-${idx}`}
               className='relative w-full shrink-0 snap-center p-4'
             >
               {/* ✅ Mock de celular (igual ao SocialProof) */}

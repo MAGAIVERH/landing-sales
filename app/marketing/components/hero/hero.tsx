@@ -7,6 +7,7 @@ import { Section } from '../section';
 import { Badge } from '@/components/ui/badge';
 
 import { HeroLeadForm } from './hero-lead-form';
+import { HowItWorksDialog } from './how-it-works-dialog';
 
 export const Hero = () => {
   return (
@@ -46,7 +47,7 @@ export const Hero = () => {
                 automações e suporte real na implantação.
               </p>
 
-              <div className='mt-8 grid gap-3 text-sm text-muted-foreground'>
+              <div className='mt-6 grid gap-3 text-sm text-muted-foreground'>
                 {[
                   'Implantação rápida com suporte técnico especializado',
                   'Estrutura pronta para agenda, pagamentos e automações',
@@ -61,10 +62,8 @@ export const Hero = () => {
                 ))}
               </div>
 
-              <div className='mt-10 flex flex-col gap-3 sm:flex-row'>
-                <Button className='bg-primary text-primary-foreground hover:bg-primary/90'>
-                  Ver como funciona
-                </Button>
+              <div className='mt-6 flex flex-col gap-3 sm:flex-row'>
+                <HowItWorksDialog />
                 <Button variant='outline'>Ver segmentos atendidos</Button>
               </div>
             </div>
