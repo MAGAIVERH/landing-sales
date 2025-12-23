@@ -127,7 +127,7 @@ export const MobileSolutions = ({ first }: { first: string }) => {
                   asChild
                   className='w-full bg-primary text-primary-foreground hover:bg-primary/90'
                 >
-                  <Link href='#precos' onClick={() => setOpen(false)}>
+                  <Link href='/budget' onClick={() => setOpen(false)}>
                     Solicitar proposta
                   </Link>
                 </Button>

@@ -120,7 +120,7 @@ export const DesktopSolutions = ({ first }: { first: string }) => {
                         asChild
                         className='bg-primary text-primary-foreground hover:bg-primary/90'
                       >
-                        <Link href='#precos'>Solicitar proposta</Link>
+                        <Link href='/budget'>Solicitar proposta</Link>
                       </Button>
                     </div>
                   </div>
