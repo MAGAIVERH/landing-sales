@@ -27,7 +27,7 @@ export const FaqCta = () => {
           </Button>
 
           <Button asChild variant='outline'>
-            <Link href='#precos'>Solicitar proposta</Link>
+            <Link href='/budget'>Solicitar proposta</Link>
           </Button>
         </div>
       </div>

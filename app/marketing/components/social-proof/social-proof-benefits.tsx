@@ -2,6 +2,7 @@
 
 import { CalendarCheck2, Check, CreditCard, Gauge } from 'lucide-react';
 import type { Segment } from './social-proof.types';
+import { HowItWorksDialog } from '../how-it-works-dialog';
 
 export const SocialProofBenefits = ({
   activeSegment,
@@ -85,7 +86,7 @@ export const SocialProofBenefits = ({
         </div>
 
         {activeSegment?.previewVariant === 'mobile' && (
-          <div className='mt-5 hidden md:block rounded-xl border bg-background p-3'>
+          <div className='mt-5   rounded-xl border bg-background p-3'>
             <p className='text-sm font-semibold'>O que está incluso</p>
             <ul className='mt-3 space-y-2 text-xs text-muted-foreground'>
               <li className='flex gap-2'>
@@ -148,12 +149,9 @@ export const SocialProofBenefits = ({
               </li>
             </ul>
 
-            <a
-              href='#cta'
-              className='mt-4 inline-flex w-full items-center justify-center rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:opacity-95'
-            >
-              Ver demonstração
-            </a>
+            <div className='mt-2 inline-flex w-full items-center justify-center rounded-sm bg-primary  text-xs font-semibold text-primary-foreground hover:opacity-95'>
+              <HowItWorksDialog triggerLabel='Ver demonstração' />
+            </div>
 
             <p className='mt-2 text-center text-[11px] text-muted-foreground'>
               Sem compromisso. Foco em previsibilidade e operação.

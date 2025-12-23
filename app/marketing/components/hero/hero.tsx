@@ -7,7 +7,8 @@ import { Section } from '../section';
 import { Badge } from '@/components/ui/badge';
 
 import { HeroLeadForm } from './hero-lead-form';
-import { HowItWorksDialog } from './how-it-works-dialog';
+import { HowItWorksDialog } from '../how-it-works-dialog';
+import { SegmentsDialog } from './SegmentsDialog';
 
 export const Hero = () => {
   return (
@@ -37,14 +38,11 @@ export const Hero = () => {
               </h1>
 
               <p className='mt-6 max-w-xl text-base text-muted-foreground md:text-lg text-center md:text-left'>
-                Desenvolvemos plataformas sob medida para{' '}
-                <strong>médicos</strong>, <strong>advogados</strong>,{' '}
-                <strong>personal trainers</strong>,{' '}
-                <strong>fisioterapeutas</strong>,{' '}
-                <strong>fonoaudiólogos</strong>, além de{' '}
-                <strong>barbearias</strong>, <strong>clínicas</strong> e{' '}
-                <strong>restaurantes</strong> — com agendamentos, pagamentos,
-                automações e suporte real na implantação.
+                Em até <strong>7 dias</strong> você tem uma plataforma no ar com{' '}
+                <strong>agendamentos</strong>, <strong>confirmações</strong> e{' '}
+                <strong>automações</strong> — pronta para{' '}
+                <strong>organizar</strong>, <strong>vender</strong> e{' '}
+                <strong>escalar</strong>.
               </p>
 
               <div className='mt-6 grid gap-3 text-sm text-muted-foreground'>
@@ -63,8 +61,8 @@ export const Hero = () => {
               </div>
 
               <div className='mt-6 flex flex-col gap-3 sm:flex-row'>
-                <HowItWorksDialog />
-                <Button variant='outline'>Ver segmentos atendidos</Button>
+                <HowItWorksDialog triggerLabel='Ver como funciona' />
+                <SegmentsDialog />
               </div>
             </div>
 
@@ -73,7 +71,8 @@ export const Hero = () => {
               <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
                 <div>
                   <h3 className='text-lg font-semibold tracking-tight sm:text-xl'>
-                    Solicite uma avaliação da plataforma
+                    Receba uma demo do seu segmento + recomendação do plano
+                    ideal
                   </h3>
 
                   {/* Badge mobile */}
@@ -82,7 +81,8 @@ export const Hero = () => {
                   </span>
 
                   <p className='mt-2 text-sm text-muted-foreground'>
-                    Receba uma proposta alinhada ao seu segmento e operação.
+                    Em 1 minuto, você envia seus dados e recebe um retorno em
+                    até 24h úteis.
                   </p>
                 </div>
 

@@ -121,7 +121,7 @@ export const HeroLeadForm = () => {
           className='h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90'
           disabled={form.formState.isSubmitting}
         >
-          Avançar para próximo passo
+          Quero minha recomendação
         </Button>
       </form>
     </Form>

@@ -5,6 +5,7 @@ import { ArrowRight, Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { HowItWorksSolutionsDialog } from '../how-it-works-solutions-dialog';
 
 export const ShowcaseCopy = ({ bullets }: { bullets: string[] }) => {
   return (
@@ -40,12 +41,12 @@ export const ShowcaseCopy = ({ bullets }: { bullets: string[] }) => {
         >
           <Link href='#precos'>
             Ver planos
-            <ArrowRight className='ml-2 h-4 w-4' />
+            <ArrowRight className=' h-4 w-4' />
           </Link>
         </Button>
 
         <Button asChild variant='outline'>
-          <Link href='#solucoes'>Ver soluções</Link>
+          <HowItWorksSolutionsDialog triggerLabel='Ver soluções' />
         </Button>
       </div>
     </div>

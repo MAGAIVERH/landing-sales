@@ -6,6 +6,7 @@ import { ArrowRight, Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Section } from '../section';
+import { HowItWorksSolutionsDialog } from '../how-it-works-solutions-dialog';
 
 export const CtaBand = () => {
   return (
@@ -47,20 +48,16 @@ export const CtaBand = () => {
 
         {/* CTAs */}
         <div className='mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row'>
-          <Button
-            asChild
-            className='bg-background text-foreground hover:bg-background/90'
-          >
-            <Link href='#precos'>
-              Ver demo no meu segmento
-              <ArrowRight className='ml-2 h-4 w-4' />
-            </Link>
-          </Button>
+          <HowItWorksSolutionsDialog
+            triggerLabel='Ver meu segmento'
+            triggerVariant='outline'
+            triggerClassName='text-white border-white/30 bg-transparent hover:bg-white/10 hover:text-white shadow-none'
+          />
 
           <Button
             asChild
             variant='outline'
-            className='border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10'
+            className='bg-background text-foreground hover:bg-muted/80 border-0    '
           >
             <Link href='#precos'>Ver planos</Link>
           </Button>

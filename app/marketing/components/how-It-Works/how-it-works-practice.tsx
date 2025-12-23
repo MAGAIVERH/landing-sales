@@ -6,6 +6,7 @@ import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import { HowItWorksPreview } from './how-it-works-preview';
+import { HowItWorksSolutionsDialog } from '../how-it-works-solutions-dialog';
 
 export const HowItWorksPractice = ({ bullets }: { bullets: string[] }) => {
   return (
@@ -41,13 +42,7 @@ export const HowItWorksPractice = ({ bullets }: { bullets: string[] }) => {
             <Link href='#precos'>Quero ver planos</Link>
           </Button>
 
-          <Button
-            asChild
-            variant='outline'
-            className='border-border bg-transparent text-foreground hover:bg-muted'
-          >
-            <Link href='#solucoes'>Ver soluções</Link>
-          </Button>
+          <HowItWorksSolutionsDialog triggerLabel='Ver soluções' />
         </div>
       </div>
 
