@@ -16,7 +16,7 @@ export const Starts = () => {
 
         <div className='grid gap-10 text-center sm:grid-cols-2 md:grid-cols-4'>
           <div>
-            <p className='text-4xl font-semibold text-primary'>99%</p>
+            <p className='text-6xl font-semibold text-primary'>99%</p>
             <p className='mt-2 text-sm text-primary/80 leading-tight min-h-8'>
               Satisfação com suporte
               <span className='block text-[11px] text-primary/70'>
@@ -36,7 +36,7 @@ export const Starts = () => {
           </div>
 
           <div>
-            <p className='text-4xl font-semibold text-primary'>7 dias</p>
+            <p className='text-6xl font-semibold text-primary'>7 dias</p>
             <p className='mt-2 text-sm text-primary/80 leading-tight min-h-8'>
               Média de entrega
               <span className='block text-[11px] text-primary/70'>
@@ -46,7 +46,7 @@ export const Starts = () => {
           </div>
 
           <div>
-            <p className='text-4xl font-semibold text-primary'>R$ 997</p>
+            <p className='text-6xl font-semibold text-primary'>R$ 997</p>
             <p className='mt-2 text-sm text-primary/80 leading-tight min-h-8'>
               A partir de
               <span className='block text-[11px] text-primary/70'>
