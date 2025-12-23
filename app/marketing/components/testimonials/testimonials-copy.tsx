@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { HowItWorksSolutionsDialog } from '../how-it-works-solutions-dialog';
 
 export const TestimonialsCopy = () => {
   return (
@@ -38,17 +39,16 @@ export const TestimonialsCopy = () => {
       </div>
 
       <div className='mt-8 flex flex-col gap-3 sm:flex-row sm:items-center'>
-        <Button
-          asChild
-          className='bg-primary-foreground text-primary hover:bg-primary-foreground/90'
-        >
-          <Link href='#precos'>Quero esses resultados</Link>
-        </Button>
+        <HowItWorksSolutionsDialog
+          triggerLabel='Quero esses resultados'
+          triggerVariant='outline'
+          triggerClassName='text-white border-white/30 bg-transparent hover:bg-white/10 hover:text-white shadow-none'
+        />
 
         <Button
           asChild
           variant='outline'
-          className='border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10'
+          className='bg-white text-black  hover:bg-muted/80'
         >
           <Link href='#precos'>Ver planos</Link>
         </Button>
