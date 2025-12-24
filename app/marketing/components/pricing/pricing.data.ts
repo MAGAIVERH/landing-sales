@@ -1,11 +1,22 @@
-import type { Plan } from './pricing.types';
+import type { PlanSlug } from './pricing.types';
 
-export const PLANS: Plan[] = [
+export type PlanMarketing = {
+  slug: PlanSlug;
+  name: string;
+  subtitle: string;
+  forWho: string;
+  features: string[];
+  priceHint: string;
+  highlight?: boolean;
+  badge?: string;
+};
+
+export const PLANS_MARKETING: PlanMarketing[] = [
   {
+    slug: 'sage-base',
     name: 'Sage Base',
-    price: 'R$ 997',
-    priceHint: 'implantação única',
     subtitle: 'Plataforma simples, rápida e pronta para agendar',
+    priceHint: 'implantação única',
     forWho:
       'Ideal para começar com operação organizada e conversão no celular.',
     features: [
@@ -17,11 +28,11 @@ export const PLANS: Plan[] = [
     ],
   },
   {
+    slug: 'sage-pay',
     name: 'Sage Pay',
-    price: 'R$ 1.497',
-    priceHint: 'implantação única',
     subtitle:
       'Agendamento só com pagamento (menos risco, mais previsibilidade)',
+    priceHint: 'implantação única',
     forWho: 'Perfeito para reduzir faltas: o cliente só reserva quando paga.',
     features: [
       'Tudo do Sage Base',
@@ -34,10 +45,10 @@ export const PLANS: Plan[] = [
     badge: 'Mais vendido',
   },
   {
+    slug: 'sage-ai',
     name: 'Sage AI',
-    price: 'R$ 2.497',
-    priceHint: 'implantação única',
     subtitle: 'Pay + IA para atendimento (conversa, qualifica e direciona)',
+    priceHint: 'implantação única',
     forWho:
       'Para escalar atendimento: mais conversas viram agenda, sem virar caos.',
     features: [

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 import { Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -8,19 +8,36 @@ import { Card } from '@/components/ui/card';
 
 import type { Plan } from './pricing.types';
 
-type PlanId = 'sage_base' | 'sage_pay' | 'sage_ai';
+const formatBRL = (unitAmountInCents: number) => {
+  const value = unitAmountInCents / 100;
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
 
 export const PricingPlanCard = ({ plan }: { plan: Plan }) => {
-  const [loadingPlan, setLoadingPlan] = React.useState<PlanId | null>(null);
+  const [loadingSlug, setLoadingSlug] = React.useState<string | null>(null);
 
-  const handlePayNow = async (planId: PlanId) => {
+  const handlePayNow = async () => {
+    console.log('[PAY_NOW]', {
+      slug: plan.slug,
+      stripePriceId: plan.stripePriceId,
+    });
     try {
-      setLoadingPlan(planId);
+      if (!plan.stripePriceId) return;
+
+      setLoadingSlug(plan.slug);
 
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: planId }),
+        body: JSON.stringify({
+          stripePriceId: plan.stripePriceId,
+          slug: plan.slug,
+        }),
       });
 
       const data = (await res.json()) as { url?: string; error?: string };
@@ -34,11 +51,12 @@ export const PricingPlanCard = ({ plan }: { plan: Plan }) => {
     } catch (err) {
       console.error(err);
     } finally {
-      setLoadingPlan(null);
+      setLoadingSlug(null);
     }
   };
 
-  const isLoading = loadingPlan === (plan.id as PlanId);
+  const isLoading = loadingSlug === plan.slug;
+  const canPay = Boolean(plan.stripePriceId);
 
   return (
     <Card
@@ -62,16 +80,16 @@ export const PricingPlanCard = ({ plan }: { plan: Plan }) => {
         </div>
       </div>
 
-      <div className=' flex items-end gap-2'>
+      <div className='flex items-end gap-2'>
         <div className='text-4xl font-semibold tracking-tight'>
-          {plan.price}
+          {formatBRL(plan.unitAmount)}
         </div>
         <span className='pb-1 text-xs text-muted-foreground'>
           {plan.priceHint}
         </span>
       </div>
 
-      <p className=' text-sm text-muted-foreground'>{plan.forWho}</p>
+      <p className='text-sm text-muted-foreground'>{plan.forWho}</p>
 
       <div className='mt-5 space-y-3'>
         {plan.features.map((f) => (
@@ -84,12 +102,12 @@ export const PricingPlanCard = ({ plan }: { plan: Plan }) => {
         ))}
       </div>
 
-      <div className=' grid gap-3'>
+      <div className='grid gap-3'>
         <Button
           type='button'
           className='w-full bg-primary text-primary-foreground hover:bg-primary/90'
-          onClick={() => handlePayNow(plan.id as PlanId)}
-          disabled={isLoading}
+          onClick={handlePayNow}
+          disabled={isLoading || !canPay}
         >
           {isLoading ? 'Redirecionando…' : 'Pagar agora'}
         </Button>

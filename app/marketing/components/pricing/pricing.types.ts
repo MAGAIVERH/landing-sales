@@ -1,13 +1,38 @@
-export type PlanId = 'sage_base' | 'sage_pay' | 'sage_ai';
+export type PlanSlug =
+  | 'sage-base'
+  | 'sage-pay'
+  | 'sage-ai'
+  | 'deploy-hosting-12m';
 
 export type Plan = {
-  id: PlanId;
+  slug: PlanSlug;
+
   name: string;
-  price: string;
-  priceHint: string;
   subtitle: string;
   forWho: string;
   features: string[];
+
+  priceHint: string;
+  unitAmount: number; // em centavos (vem do banco)
+  stripePriceId: string; // vem do banco
+
   highlight?: boolean;
   badge?: string;
+};
+
+export type PricingApiResponse = {
+  data: Array<{
+    id: string;
+    slug: PlanSlug;
+    name: string;
+    description: string | null;
+    price: {
+      id: string;
+      stripePriceId: string;
+      billingType: 'ONE_TIME' | 'RECURRING';
+      currency: string;
+      unitAmount: number;
+      interval: string | null;
+    } | null;
+  }>;
 };
