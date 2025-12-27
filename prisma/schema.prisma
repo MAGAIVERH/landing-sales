@@ -44,32 +44,37 @@ enum SubscriptionStatus {
   PAUSED
 }
 
+enum BriefingStatus {
+  DRAFT
+  SUBMITTED
+}
+
 model User {
-  id               String   @id @default(cuid())
-  email            String   @unique
-  name             String?
-  role             UserRole @default(MEMBER)
+  id    String   @id @default(cuid())
+  email String   @unique
+  name  String?
+  role  UserRole @default(MEMBER)
 
   // Stripe
-  stripeCustomerId String?  @unique
+  stripeCustomerId String? @unique
 
-  orders           Order[]
-  subscriptions    Subscription[]
+  orders        Order[]
+  subscriptions Subscription[]
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([createdAt])
 }
 
 model Lead {
-  id        String     @id @default(cuid())
-  email     String?
-  name      String?
-  phone     String?
-  message   String?
-  source    String?    // ex: "whatsapp", "form", "cta-hero"
-  status    LeadStatus @default(NEW)
+  id      String     @id @default(cuid())
+  email   String?
+  name    String?
+  phone   String?
+  message String?
+  source  String? // ex: "whatsapp", "form", "cta-hero"
+  status  LeadStatus @default(NEW)
 
   // Marketing attribution
   utmSource   String?
@@ -80,10 +85,10 @@ model Lead {
   referrer    String?
   landingPath String?
 
-  orders     Order[]
+  orders Order[]
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status, createdAt])
   @@index([email])
@@ -96,73 +101,90 @@ model Product {
   description String?
   active      Boolean @default(true)
 
-  prices      Price[]
+  prices Price[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Price {
-  id            String      @id @default(cuid())
-  productId     String
-  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  billingType   BillingType @default(ONE_TIME)
+  billingType BillingType @default(ONE_TIME)
 
   // valores em centavos
-  currency      String      @default("brl")
-  unitAmount    Int
+  currency   String @default("brl")
+  unitAmount Int
 
   // Para recorrência (opcional): "month", "year"
-  interval      String?     // use apenas se billingType = RECURRING
+  interval String? // use apenas se billingType = RECURRING
 
-  active        Boolean     @default(true)
+  active Boolean @default(true)
 
   // Stripe
-  stripePriceId String      @unique
+  stripePriceId String @unique
 
   orders        Order[]
   subscriptions Subscription[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([productId, active])
   @@index([billingType])
 }
 
 model Order {
-  id                      String      @id @default(cuid())
+  id String @id @default(cuid())
 
   // O pedido pode vir de:
   // - usuário logado (User)
   // - lead (Lead) (ex: WhatsApp ou formulário sem login)
-  userId                  String?
-  user                    User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  leadId                  String?
-  lead                    Lead?       @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  leadId String?
+  lead   Lead?   @relation(fields: [leadId], references: [id], onDelete: SetNull)
 
-  priceId                 String
-  price                   Price       @relation(fields: [priceId], references: [id])
+  // Importante: manter Price como "fonte interna" do plano adquirido.
+  // No webhook você mapeia stripePriceId -> Price.id
+  priceId String
+  price   Price  @relation(fields: [priceId], references: [id], onDelete: Restrict)
 
-  quantity                Int         @default(1)
-  currency                String      @default("brl")
+  quantity Int    @default(1)
+  currency String @default("brl")
+
+  upsells UpsellPurchase[]
 
   // snapshot do total no momento da compra (centavos)
-  amountSubtotal          Int
-  amountDiscount          Int         @default(0)
-  amountTotal             Int
+  amountSubtotal Int
+  amountDiscount Int @default(0)
+  amountTotal    Int
 
-  status                  OrderStatus @default(PENDING)
+  status       OrderStatus   @default(PENDING)
+  stripeEvents StripeEvent[] @relation("OrderStripeEvents")
 
   // Stripe (checkout + pagamento)
-  stripeCheckoutSessionId String?     @unique
-  stripePaymentIntentId   String?     @unique
+  // Mantido como opcional para permitir criar Order antes/depois do checkout, mas:
+  // - no fluxo recomendado, você cria Order no "create checkout" e já salva o sessionId
+  stripeCheckoutSessionId String? @unique
+  stripePaymentIntentId   String? @unique
 
-  paidAt                  DateTime?
-  createdAt               DateTime    @default(now())
-  updatedAt               DateTime    @updatedAt
+  // Snapshots úteis do Stripe (para UX, auditoria e suporte)
+  stripeCustomerId String?
+  customerEmail    String?
+
+  // Metadata do checkout (ex.: userId, productKey, leadId, etc.) para debug/auditoria
+  stripeMetadata Json?
+
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Briefing (wizard) — 1:1 com o pedido
+  briefing Briefing?
 
   @@index([userId, createdAt])
   @@index([leadId, createdAt])
@@ -170,26 +192,44 @@ model Order {
   @@index([priceId])
 }
 
+model Briefing {
+  id String @id @default(cuid())
+
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  status BriefingStatus @default(DRAFT)
+
+  // Autosave do wizard (payload livre, evolutivo)
+  data Json?
+
+  submittedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status, createdAt])
+}
+
 model Subscription {
-  id                   String             @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId               String
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  priceId              String
-  price                Price              @relation(fields: [priceId], references: [id])
+  priceId String
+  price   Price  @relation(fields: [priceId], references: [id], onDelete: Restrict)
 
-  status               SubscriptionStatus @default(INCOMPLETE)
+  status SubscriptionStatus @default(INCOMPLETE)
 
   // Stripe
-  stripeSubscriptionId String             @unique
+  stripeSubscriptionId String @unique
 
-  currentPeriodStart   DateTime?
-  currentPeriodEnd     DateTime?
-  cancelAtPeriodEnd    Boolean            @default(false)
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
 
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId, status])
   @@index([priceId])
@@ -201,9 +241,40 @@ model StripeEvent {
   type          String
   apiVersion    String?
   createdAt     DateTime @default(now())
-
-  // payload completo (para auditoria / debug)
   payload       Json
 
+  processedAt DateTime?
+
+  orderId String?
+  order   Order?  @relation("OrderStripeEvents", fields: [orderId], references: [id], onDelete: SetNull)
+
   @@index([type, createdAt])
+  @@index([orderId])
+}
+
+enum UpsellStatus {
+  PENDING
+  PAID
+  CANCELED
+}
+
+model UpsellPurchase {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  kind   String // "hosting"
+  status UpsellStatus @default(PENDING)
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  stripeCheckoutSessionId String? @unique
+  stripePaymentIntentId   String? @unique
+
+  amountTotal Int?
+  currency    String?
+
+  @@index([orderId, kind])
+  @@index([status, createdAt])
 }
