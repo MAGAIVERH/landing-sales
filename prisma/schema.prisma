@@ -186,6 +186,9 @@ model Order {
   // Briefing (wizard) — 1:1 com o pedido
   briefing Briefing?
 
+  // ✅ Magic links (sem login) — 1:N com Order
+  accessLinks OrderAccessLink[]
+
   @@index([userId, createdAt])
   @@index([leadId, createdAt])
   @@index([status, createdAt])
@@ -277,4 +280,36 @@ model UpsellPurchase {
 
   @@index([orderId, kind])
   @@index([status, createdAt])
+}
+
+model OrderAccessLink {
+  id String @id @default(cuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Salvar apenas o hash do token (nunca o token puro)
+  tokenHash String @unique
+
+  // Controle de validade e revogação
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  // Auditoria e base para recuperação
+  destinationEmail String?
+  destinationPhone String?
+
+  // Auditoria de uso
+  lastUsedAt DateTime?
+  useCount   Int       @default(0)
+
+  // Base para rate-limit de reenvio
+  lastSentAt DateTime?
+  sendCount  Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([expiresAt])
 }
