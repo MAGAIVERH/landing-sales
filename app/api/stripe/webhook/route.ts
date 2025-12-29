@@ -3,6 +3,8 @@ import type Stripe from 'stripe';
 
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
+import { createOrRotateOrderAccessLink } from '@/lib/magic-link';
+import { sendAccessLinkEmail } from '@/lib/email';
 
 export const runtime = 'nodejs';
 
@@ -224,6 +226,45 @@ export const POST = async (req: Request) => {
             where: { id: userId, stripeCustomerId: null },
             data: { stripeCustomerId },
           });
+        }
+
+        // ✅ MAGIC LINK (no-login) — generate access URL and send email
+        if (customerEmail) {
+          try {
+            const { token, expiresAt } = await createOrRotateOrderAccessLink({
+              orderId: order.id,
+              destinationEmail: customerEmail,
+              revokeExisting: false, // webhook should NOT invalidate previous links
+            });
+
+            const baseUrlRaw =
+              process.env.NEXT_PUBLIC_APP_URL ??
+              process.env.APP_URL ??
+              'http://localhost:3000';
+
+            const baseUrl = baseUrlRaw.replace(/\/$/, ''); // remove trailing "/"
+
+            // ✅ route is in English
+            const accessUrl = `${baseUrl}/access/${encodeURIComponent(token)}`;
+
+            // ✅ Send email (Resend)
+            await sendAccessLinkEmail({
+              to: customerEmail,
+              accessUrl,
+              expiresInDays: 7,
+            });
+
+            console.log('[magic-link] orderId:', order.id);
+            console.log('[magic-link] expiresAt:', expiresAt.toISOString());
+            console.log('[magic-link] email sent to:', customerEmail);
+          } catch (e) {
+            console.error('[magic-link] failed:', e);
+          }
+        } else {
+          console.warn(
+            '[magic-link] customerEmail missing, orderId:',
+            order.id,
+          );
         }
 
         await markProcessed(order.id);
