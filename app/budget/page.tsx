@@ -3,10 +3,10 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+
+import { BudgetLeadForm } from './budget-lead-form';
+import { Home } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,9 +55,12 @@ export default async function BudgetPage({
             prazo e proposta.
           </p>
 
-          <div className='mt-6 flex justify-center md:justify-start'>
+          <div className='mt-6 flex justify-center md:justify-start '>
             <Button asChild variant='outline'>
-              <Link href='/'>Voltar para a página inicial</Link>
+              <Link href='/'>
+                <Home className='h-4 w-4' />
+                Voltar para a página inicial
+              </Link>
             </Button>
           </div>
 
@@ -88,81 +91,11 @@ export default async function BudgetPage({
 
               <Separator className='my-6' />
 
-              <form className='grid gap-6'>
-                {/* Nome */}
-                <div className='grid gap-2'>
-                  <Label htmlFor='name'>Nome</Label>
-                  <Input
-                    id='name'
-                    name='name'
-                    placeholder='Seu nome'
-                    className='h-11'
-                    defaultValue={name}
-                  />
-                </div>
-
-                {/* Email + Whats */}
-                <div className='grid gap-4 md:grid-cols-2'>
-                  <div className='grid gap-2'>
-                    <Label htmlFor='email'>E-mail</Label>
-                    <Input
-                      id='email'
-                      name='email'
-                      type='email'
-                      placeholder='seu@email.com'
-                      className='h-11'
-                      defaultValue={email}
-                    />
-                  </div>
-
-                  <div className='grid gap-2'>
-                    <Label htmlFor='phone'>WhatsApp</Label>
-                    <Input
-                      id='phone'
-                      name='phone'
-                      placeholder='(xx) xxxxx-xxxx'
-                      className='h-11'
-                      defaultValue={phone}
-                    />
-                    <p className='text-xs text-muted-foreground'>
-                      Opcional, mas acelera o retorno.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Segmento */}
-                <div className='grid gap-2'>
-                  <Label htmlFor='segment'>Segmento</Label>
-                  <Input
-                    id='segment'
-                    name='segment'
-                    placeholder='Ex.: Médicos / Clínica / Consultório'
-                    className='h-11'
-                  />
-                </div>
-
-                {/* Descrição */}
-                <div className='grid gap-2'>
-                  <Label htmlFor='message'>O que você precisa?</Label>
-                  <Textarea
-                    id='message'
-                    name='message'
-                    placeholder='Explique o objetivo, funcionalidades desejadas e prazo.'
-                    className='min-h-35 resize-none'
-                  />
-                  <p className='text-xs text-muted-foreground'>
-                    Ex.: agenda online, pagamentos, automações, área do cliente,
-                    etc.
-                  </p>
-                </div>
-
-                {/* rodapé */}
-                <div className='flex justify-end'>
-                  <Button type='submit' disabled className='h-11 px-6'>
-                    Enviar (na próxima fase)
-                  </Button>
-                </div>
-              </form>
+              <BudgetLeadForm
+                defaultName={name}
+                defaultEmail={email}
+                defaultPhone={phone}
+              />
             </div>
           </Card>
 
