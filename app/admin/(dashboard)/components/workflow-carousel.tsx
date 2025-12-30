@@ -1,0 +1,483 @@
+'use client';
+
+import * as React from 'react';
+import Link from 'next/link';
+import {
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  Sparkles,
+  MessageCircle,
+  ArrowRight,
+  LayoutGrid,
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+
+type ReadyItem = {
+  orderId: string;
+  email: string;
+  product: string;
+  total: string;
+};
+
+type StalledItem = {
+  orderId: string;
+  email: string;
+  product: string;
+  updatedAt: string;
+  whatsappLink?: string | null;
+};
+
+type UpsellItem = {
+  orderId: string;
+  email: string;
+  product: string;
+  createdAt: string;
+};
+
+type LeadItem = {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  landingPath: string;
+  whatsappLink?: string | null;
+};
+
+type Props = {
+  ready: ReadyItem[];
+  stalled: StalledItem[];
+  upsells: UpsellItem[];
+  leads: LeadItem[];
+};
+
+type TabKey = 'ready' | 'stalled' | 'upsell' | 'leads';
+
+const Pill = ({
+  active,
+  onClick,
+  icon: Icon,
+  title,
+  count,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ElementType;
+  title: string;
+  count: number;
+}) => {
+  return (
+    <button
+      type='button'
+      onClick={onClick}
+      className={[
+        'flex items-center gap-2 rounded-full border px-3 py-2 text-sm transition-colors',
+        'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        'focus-visible:ring-offset-background',
+        'active:translate-y-0',
+        'disabled:pointer-events-none disabled:opacity-50',
+        active
+          ? 'bg-primary text-primary-foreground border-primary/30 hover:bg-primary/90 active:bg-primary/90 focus:bg-primary/90'
+          : 'bg-background hover:bg-muted/40 active:bg-muted/40 focus:bg-muted/40',
+        '[-webkit-tap-highlight-color:transparent]',
+      ].join(' ')}
+    >
+      <Icon className='h-4 w-4' />
+      <span className='font-medium'>{title}</span>
+      <Badge
+        variant={active ? 'secondary' : 'outline'}
+        className={active ? 'bg-background/15 text-primary-foreground' : ''}
+      >
+        {count}
+      </Badge>
+    </button>
+  );
+};
+
+const ListShell = ({
+  title,
+  subtitle,
+  children,
+  footer,
+}: {
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}) => {
+  return (
+    <Card className='rounded-2xl border bg-card shadow-sm'>
+      <div className='px-4 py-2 sm:px-5 sm:py-2'>
+        <div className='flex items-start justify-between gap-3'>
+          <div>
+            <p className='text-sm font-semibold'>{title}</p>
+            <p className='mt-1 text-xs text-muted-foreground'>{subtitle}</p>
+          </div>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className='px-4 py-2 sm:px-5 '>
+        {children}
+        {footer ? <div className='mt-4 flex justify-end'>{footer}</div> : null}
+      </div>
+    </Card>
+  );
+};
+
+const Row = ({
+  title,
+  subtitle,
+  right,
+}: {
+  title: string;
+  subtitle: string;
+  right: React.ReactNode;
+}) => {
+  return (
+    <div className='flex items-start justify-between gap-3 rounded-xl border bg-background px-3 py-3'>
+      <div className='min-w-0 flex-1'>
+        <p className='truncate text-sm font-medium'>{title}</p>
+
+        <p className='mt-0.5 line-clamp-2 text-xs text-muted-foreground wrap-break-word '>
+          {subtitle}
+        </p>
+      </div>
+
+      <div className='shrink-0'>{right}</div>
+    </div>
+  );
+};
+
+export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
+  const [tab, setTab] = React.useState<TabKey>('ready');
+  const [open, setOpen] = React.useState(false);
+
+  const tabs = [
+    {
+      key: 'ready' as const,
+      title: 'Produção',
+      icon: CheckCircle2,
+      count: ready.length,
+      hint: 'Pago + briefing concluído. É o que vira entrega agora.',
+    },
+    {
+      key: 'stalled' as const,
+      title: 'Cobrar',
+      icon: Clock,
+      count: stalled.length,
+      hint: 'Briefings parados. Ação: cobrar cliente para concluir.',
+    },
+    {
+      key: 'upsell' as const,
+      title: 'Upsell',
+      icon: Sparkles,
+      count: upsells.length,
+      hint: 'Visibilidade. Não é prioridade operacional diária.',
+    },
+    {
+      key: 'leads' as const,
+      title: 'Leads',
+      icon: CreditCard,
+      count: leads.length,
+      hint: 'Triagem. Responder e direcionar o próximo passo.',
+    },
+  ];
+
+  const activeMeta = tabs.find((t) => t.key === tab)!;
+
+  const content = (
+    <div className='grid gap-3 mt-6'>
+      {/* READY */}
+      {tab === 'ready' ? (
+        <ListShell
+          title='Prontos para produção'
+          subtitle={activeMeta.hint}
+          footer={
+            <Link href='/admin/orders'>
+              <Button variant='outline' className='h-9 gap-2'>
+                Ver pedidos <ArrowRight className='h-4 w-4' />
+              </Button>
+            </Link>
+          }
+        >
+          {ready.length === 0 ? (
+            <div className='rounded-xl border bg-muted/20 px-3 py-3'>
+              <p className='text-sm text-muted-foreground'>
+                Nenhum pronto no momento.
+              </p>
+            </div>
+          ) : (
+            <div className='grid gap-2'>
+              {ready.slice(0, 8).map((o) => (
+                <Row
+                  key={o.orderId}
+                  title={`${o.email} • ${o.product}`}
+                  subtitle={`Total: ${o.total}`}
+                  right={
+                    <Link href={`/admin/orders/${o.orderId}`}>
+                      <Button className='h-9 gap-2' variant='outline'>
+                        Abrir briefing <ArrowRight className='h-4 w-4' />
+                      </Button>
+                    </Link>
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </ListShell>
+      ) : null}
+
+      {/* STALLED */}
+      {tab === 'stalled' ? (
+        <ListShell
+          title='Onboarding parado (2+ dias)'
+          subtitle={activeMeta.hint}
+          footer={
+            <Link href='/admin/orders'>
+              <Button variant='outline' className='h-9 gap-2'>
+                Ver pedidos <ArrowRight className='h-4 w-4' />
+              </Button>
+            </Link>
+          }
+        >
+          {stalled.length === 0 ? (
+            <div className='rounded-xl border bg-muted/20 px-3 py-3'>
+              <p className='text-sm text-muted-foreground'>
+                Nenhum onboarding parado.
+              </p>
+            </div>
+          ) : (
+            <div className='grid gap-2'>
+              {stalled.slice(0, 8).map((b) => (
+                <Row
+                  key={b.orderId}
+                  title={`${b.email} • ${b.product}`}
+                  subtitle={`Parado desde: ${b.updatedAt}`}
+                  right={
+                    <div className='flex items-center gap-2'>
+                      {b.whatsappLink ? (
+                        <a
+                          href={b.whatsappLink}
+                          target='_blank'
+                          rel='noreferrer'
+                        >
+                          <Button className='h-9 gap-2' variant='outline'>
+                            <MessageCircle className='h-4 w-4' />
+                            Cobrar
+                          </Button>
+                        </a>
+                      ) : (
+                        <Button
+                          className='h-9 gap-2'
+                          variant='outline'
+                          disabled
+                        >
+                          <MessageCircle className='h-4 w-4' />
+                          Cobrar
+                        </Button>
+                      )}
+
+                      <Link href={`/admin/orders/${b.orderId}`}>
+                        <Button className='h-9' variant='outline'>
+                          Ver
+                        </Button>
+                      </Link>
+                    </div>
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </ListShell>
+      ) : null}
+
+      {/* UPSELL */}
+      {tab === 'upsell' ? (
+        <ListShell
+          title='Upsell hosting (informativo)'
+          subtitle={activeMeta.hint}
+          footer={
+            <Link href='/admin/orders'>
+              <Button variant='outline' className='h-9 gap-2'>
+                Ver pedidos <ArrowRight className='h-4 w-4' />
+              </Button>
+            </Link>
+          }
+        >
+          {upsells.length === 0 ? (
+            <div className='rounded-xl border bg-muted/20 px-3 py-3'>
+              <p className='text-sm text-muted-foreground'>
+                Nenhum upsell pendente.
+              </p>
+            </div>
+          ) : (
+            <div className='grid gap-2'>
+              {upsells.slice(0, 8).map((u) => (
+                <Row
+                  key={u.orderId}
+                  title={`${u.email} • ${u.product}`}
+                  subtitle={`Criado em: ${u.createdAt}`}
+                  right={
+                    <Link href={`/admin/orders/${u.orderId}`}>
+                      <Button className='h-9' variant='outline'>
+                        Ver
+                      </Button>
+                    </Link>
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </ListShell>
+      ) : null}
+
+      {/* LEADS */}
+      {tab === 'leads' ? (
+        <ListShell
+          title='Leads novos'
+          subtitle={activeMeta.hint}
+          footer={
+            <Link href='/admin/leads'>
+              <Button variant='outline' className='h-9 gap-2'>
+                Ver todos <ArrowRight className='h-4 w-4' />
+              </Button>
+            </Link>
+          }
+        >
+          {leads.length === 0 ? (
+            <div className='rounded-xl border bg-muted/20 px-3 py-3'>
+              <p className='text-sm text-muted-foreground'>
+                Nenhum lead ainda.
+              </p>
+            </div>
+          ) : (
+            <div className='grid gap-2'>
+              {leads.slice(0, 8).map((l) => (
+                <Row
+                  key={l.id}
+                  title={`${l.name} • ${l.email}`}
+                  subtitle={l.message || `Origem: ${l.landingPath}`}
+                  right={
+                    l.whatsappLink ? (
+                      <a href={l.whatsappLink} target='_blank' rel='noreferrer'>
+                        <Button className='h-9 gap-2' variant='outline'>
+                          <MessageCircle className='h-4 w-4' />
+                          WhatsApp
+                        </Button>
+                      </a>
+                    ) : (
+                      <Button className='h-9 gap-2' variant='outline' disabled>
+                        <MessageCircle className='h-4 w-4' />
+                        WhatsApp
+                      </Button>
+                    )
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </ListShell>
+      ) : null}
+    </div>
+  );
+
+  return (
+    <div className='grid gap-3'>
+      {/* Desktop */}
+      <div className='hidden md:block'>
+        <Card className='rounded-2xl border bg-card p-4 shadow-sm'>
+          <div className='flex items-start justify-between gap-3 '>
+            <div>
+              <p className='text-sm font-semibold'>Fluxo de trabalho</p>
+              <p className='mt-1 text-xs text-muted-foreground'>
+                1) Produção, 2) Cobrança de onboarding, 3) Visibilidade de
+                upsell, 4) Triagem de leads.
+              </p>
+            </div>
+
+            <div className='flex items-center gap-2'>
+              <Badge variant='secondary'>Ativo: {activeMeta.title}</Badge>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className='flex flex-wrap gap-2'>
+            {tabs.map((t) => (
+              <Pill
+                key={t.key}
+                active={tab === t.key}
+                onClick={() => setTab(t.key)}
+                icon={t.icon}
+                title={t.title}
+                count={t.count}
+              />
+            ))}
+          </div>
+        </Card>
+
+        {content}
+      </div>
+
+      {/* Mobile */}
+      <div className='md:hidden'>
+        <Card className='rounded-2xl border bg-card p-4 shadow-sm'>
+          <div className='flex items-start justify-between gap-3'>
+            <div className='min-w-0'>
+              <p className='text-sm font-semibold'>Fluxo de trabalho</p>
+              <p className='mt-1 text-xs text-muted-foreground truncate'>
+                Ativo: {activeMeta.title} • {activeMeta.hint}
+              </p>
+            </div>
+
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger asChild>
+                <Button variant='outline' className='h-9 gap-2'>
+                  <LayoutGrid className='h-4 w-4' />
+                  Filas
+                </Button>
+              </SheetTrigger>
+
+              <SheetContent side='bottom' className='rounded-t-2xl'>
+                <SheetHeader>
+                  <SheetTitle>Filas operacionais</SheetTitle>
+                </SheetHeader>
+
+                <div className='mt-4 flex flex-wrap gap-2'>
+                  {tabs.map((t) => (
+                    <Pill
+                      key={t.key}
+                      active={tab === t.key}
+                      onClick={() => {
+                        setTab(t.key);
+                        setOpen(false);
+                      }}
+                      icon={t.icon}
+                      title={t.title}
+                      count={t.count}
+                    />
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </Card>
+
+        {content}
+      </div>
+    </div>
+  );
+};
