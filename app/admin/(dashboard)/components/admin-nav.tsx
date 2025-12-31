@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { LayoutDashboard, Users, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, ListChecks } from 'lucide-react';
 
 const NavItem = ({
   href,
@@ -25,6 +25,7 @@ export const AdminNav = () => {
   return (
     <nav className='grid gap-1'>
       <NavItem href='/admin' label='Visão geral' icon={LayoutDashboard} />
+      <NavItem href='/admin/workboard' label='Operação' icon={ListChecks} />
       <NavItem href='/admin/leads' label='Leads' icon={Users} />
       <NavItem href='/admin/orders' label='Pedidos' icon={CreditCard} />
     </nav>
