@@ -1,3 +1,4 @@
+import type { ElementType } from 'react';
 import Link from 'next/link';
 import {
   MessageCircle,
@@ -48,19 +49,16 @@ export default async function AdminPage() {
   const tomorrow = addDaysUTC(today, 1);
   const start7 = addDaysUTC(today, -6);
 
+  // Promise.all só com as queries que realmente estão no array
   const [
     leadsToday,
     leads7,
     paidOrdersToday,
     paidOrders7,
     revenue7,
-
     onboardingPending,
     onboardingsStarted7,
-
     recentLeads,
-
-    // filas
     readyForProduction,
     stalledBriefings,
     pendingUpsells,
@@ -132,7 +130,7 @@ export default async function AdminPage() {
       },
     }),
 
-    // 3) UPSELL PENDENTE
+    // 3) UPSELL PENDENTE (tentou comprar e parou)
     prisma.upsellPurchase.findMany({
       take: 12,
       orderBy: { createdAt: 'desc' },
@@ -147,6 +145,29 @@ export default async function AdminPage() {
       },
     }),
   ]);
+
+  // 4) NÃO CONTRATOU HOSTING: pedido PAID sem nenhum registro de upsellPurchase kind=hosting
+  // (sem depender de relation "upsellPurchases" no Order, porque no meu schema não existe)
+  const hostingUpsellOrderIds = await prisma.upsellPurchase.findMany({
+    where: { kind: 'hosting' }, // qualquer status (PENDING ou PAID)
+    select: { orderId: true },
+  });
+
+  const hostingIds = hostingUpsellOrderIds.map((x) => x.orderId);
+
+  const notContractedHostingOrders = await prisma.order.findMany({
+    take: 12,
+    orderBy: { paidAt: 'desc' },
+    where: {
+      status: 'PAID',
+      paidAt: { gte: start7, lt: tomorrow },
+      ...(hostingIds.length ? { id: { notIn: hostingIds } } : {}),
+    },
+    include: {
+      lead: true,
+      price: { include: { product: true } },
+    },
+  });
 
   const revenue7Cents = revenue7._sum.amountTotal ?? 0;
   const conversion7 = leads7 > 0 ? Math.round((paidOrders7 / leads7) * 100) : 0;
@@ -175,12 +196,24 @@ export default async function AdminPage() {
     };
   });
 
-  const upsells = pendingUpsells.map((u) => ({
+  // Upsell com 2 categorias (badge forte)
+  const pending = pendingUpsells.map((u) => ({
     orderId: u.orderId,
     email: u.order.customerEmail ?? u.order.lead?.email ?? 'sem email',
     product: u.order.price.product.name,
     createdAt: u.createdAt.toISOString().slice(0, 10),
+    tag: 'PENDING' as const, // tentou e parou
   }));
+
+  const notContracted = notContractedHostingOrders.map((o) => ({
+    orderId: o.id,
+    email: o.customerEmail ?? o.lead?.email ?? 'sem email',
+    product: o.price.product.name,
+    createdAt: (o.paidAt ?? o.createdAt).toISOString().slice(0, 10),
+    tag: 'NOT_CONTRACTED' as const, // nunca tentou
+  }));
+
+  const upsells = [...pending, ...notContracted];
 
   const leads = recentLeads.map((l) => {
     const msg =
@@ -210,7 +243,7 @@ export default async function AdminPage() {
     label: string;
     value: string;
     helper?: string;
-    icon: React.ElementType;
+    icon: ElementType;
     tone: 'c1' | 'c2' | 'c3' | 'c4';
   }) => {
     const toneStyles = {
@@ -244,7 +277,7 @@ export default async function AdminPage() {
       <Card
         className={[
           'relative overflow-hidden rounded-2xl border p-4 shadow-sm',
-          'sm:p-4', // padding menor, inclusive no desktop
+          'sm:p-4',
           toneStyles.border,
         ].join(' ')}
       >
@@ -295,9 +328,9 @@ export default async function AdminPage() {
 
           <div className='flex items-center gap-2'>
             <Badge variant='secondary'>Últimos 7 dias</Badge>
-            <Link href='/admin/leads'>
+            <Link href='/admin/workboard'>
               <Button variant='outline' className='h-9 gap-2'>
-                Abrir Leads <ArrowRight className='h-4 w-4' />
+                Abrir fila prioritária <ArrowRight className='h-4 w-4' />
               </Button>
             </Link>
           </div>
@@ -306,7 +339,6 @@ export default async function AdminPage() {
 
       <Separator />
 
-      {/* KPIs (números mais contidos) */}
       {/* KPIs */}
       <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
         <KpiCard
@@ -342,7 +374,7 @@ export default async function AdminPage() {
         />
       </div>
 
-      {/* Filas em “carrossel” + Sheet no mobile */}
+      {/* Filas */}
       <WorkflowCarousel
         ready={ready}
         stalled={stalled}
@@ -350,7 +382,7 @@ export default async function AdminPage() {
         leads={leads}
       />
 
-      {/* CTA rápido opcional (mantém utilidade) */}
+      {/* Atalhos */}
       <Card className='p-4'>
         <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
           <div>

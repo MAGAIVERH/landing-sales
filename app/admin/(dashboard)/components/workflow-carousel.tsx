@@ -24,6 +24,9 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 
+import { useSearchParams } from 'next/navigation';
+import { isTabKey } from '@/lib/admin-workflow';
+
 type ReadyItem = {
   orderId: string;
   email: string;
@@ -44,6 +47,7 @@ type UpsellItem = {
   email: string;
   product: string;
   createdAt: string;
+  tag: 'PENDING' | 'NOT_CONTRACTED';
 };
 
 type LeadItem = {
@@ -63,6 +67,9 @@ type Props = {
 };
 
 type TabKey = 'ready' | 'stalled' | 'upsell' | 'leads';
+
+const MAX_COLLAPSED = 4;
+const MAX_EXPANDED = 10;
 
 const Pill = ({
   active,
@@ -164,6 +171,18 @@ const Row = ({
 export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
   const [tab, setTab] = React.useState<TabKey>('ready');
   const [open, setOpen] = React.useState(false);
+  const [expanded, setExpanded] = React.useState(false);
+
+  React.useEffect(() => {
+    setExpanded(false);
+  }, [tab]);
+
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+
+  React.useEffect(() => {
+    if (isTabKey(tabParam)) setTab(tabParam);
+  }, [tabParam]);
 
   const tabs = [
     {
@@ -198,6 +217,53 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
 
   const activeMeta = tabs.find((t) => t.key === tab)!;
 
+  const showToggle = (len: number) => len > MAX_COLLAPSED;
+
+  const sliceForView = <T,>(items: T[]) =>
+    items.slice(0, expanded ? MAX_EXPANDED : MAX_COLLAPSED);
+
+  const footerWithOrders = (len: number) => {
+    return (
+      <div className='flex items-center justify-between gap-2'>
+        <div>
+          {showToggle(len) ? (
+            <Button
+              type='button'
+              variant='outline'
+              className='h-9'
+              onClick={() => setExpanded((v) => !v)}
+            >
+              {expanded ? 'Ver menos' : 'Ver todos'}
+            </Button>
+          ) : null}
+        </div>
+
+        <Link href='/admin/orders'>
+          <Button variant='outline' className='h-9 gap-2'>
+            Ver pedidos <ArrowRight className='h-4 w-4' />
+          </Button>
+        </Link>
+      </div>
+    );
+  };
+
+  const footerLeadsOnly = (len: number) => {
+    return (
+      <div className='flex justify-end'>
+        {showToggle(len) ? (
+          <Button
+            type='button'
+            variant='outline'
+            className='h-9'
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {expanded ? 'Ver menos' : 'Ver todos'}
+          </Button>
+        ) : null}
+      </div>
+    );
+  };
+
   const content = (
     <div className='grid gap-3 mt-6'>
       {/* READY */}
@@ -205,13 +271,7 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
         <ListShell
           title='Prontos para produção'
           subtitle={activeMeta.hint}
-          footer={
-            <Link href='/admin/orders'>
-              <Button variant='outline' className='h-9 gap-2'>
-                Ver pedidos <ArrowRight className='h-4 w-4' />
-              </Button>
-            </Link>
-          }
+          footer={footerWithOrders(ready.length)}
         >
           {ready.length === 0 ? (
             <div className='rounded-xl border bg-muted/20 px-3 py-3'>
@@ -221,7 +281,7 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
             </div>
           ) : (
             <div className='grid gap-2'>
-              {ready.slice(0, 8).map((o) => (
+              {sliceForView(ready).map((o) => (
                 <Row
                   key={o.orderId}
                   title={`${o.email} • ${o.product}`}
@@ -235,6 +295,12 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
                   }
                 />
               ))}
+
+              {expanded && ready.length > MAX_EXPANDED ? (
+                <p className='text-xs text-muted-foreground'>
+                  Mostrando {MAX_EXPANDED} de {ready.length}.
+                </p>
+              ) : null}
             </div>
           )}
         </ListShell>
@@ -245,13 +311,7 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
         <ListShell
           title='Onboarding parado (2+ dias)'
           subtitle={activeMeta.hint}
-          footer={
-            <Link href='/admin/orders'>
-              <Button variant='outline' className='h-9 gap-2'>
-                Ver pedidos <ArrowRight className='h-4 w-4' />
-              </Button>
-            </Link>
-          }
+          footer={footerWithOrders(stalled.length)}
         >
           {stalled.length === 0 ? (
             <div className='rounded-xl border bg-muted/20 px-3 py-3'>
@@ -261,7 +321,7 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
             </div>
           ) : (
             <div className='grid gap-2'>
-              {stalled.slice(0, 8).map((b) => (
+              {sliceForView(stalled).map((b) => (
                 <Row
                   key={b.orderId}
                   title={`${b.email} • ${b.product}`}
@@ -299,6 +359,12 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
                   }
                 />
               ))}
+
+              {expanded && stalled.length > MAX_EXPANDED ? (
+                <p className='text-xs text-muted-foreground'>
+                  Mostrando {MAX_EXPANDED} de {stalled.length}.
+                </p>
+              ) : null}
             </div>
           )}
         </ListShell>
@@ -309,13 +375,7 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
         <ListShell
           title='Upsell hosting (informativo)'
           subtitle={activeMeta.hint}
-          footer={
-            <Link href='/admin/orders'>
-              <Button variant='outline' className='h-9 gap-2'>
-                Ver pedidos <ArrowRight className='h-4 w-4' />
-              </Button>
-            </Link>
-          }
+          footer={footerWithOrders(upsells.length)}
         >
           {upsells.length === 0 ? (
             <div className='rounded-xl border bg-muted/20 px-3 py-3'>
@@ -325,20 +385,44 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
             </div>
           ) : (
             <div className='grid gap-2'>
-              {upsells.slice(0, 8).map((u) => (
+              {sliceForView(upsells).map((u) => (
                 <Row
                   key={u.orderId}
                   title={`${u.email} • ${u.product}`}
                   subtitle={`Criado em: ${u.createdAt}`}
                   right={
-                    <Link href={`/admin/orders/${u.orderId}`}>
-                      <Button className='h-9' variant='outline'>
-                        Ver
-                      </Button>
-                    </Link>
+                    <div className='flex items-center gap-2'>
+                      {u.tag === 'PENDING' ? (
+                        <Badge
+                          variant='outline'
+                          className='inline-flex min-w-30 items-center justify-center border-chart-4/40 bg-chart-4/15 px-2 py-1 text-[11px] font-medium text-chart-5'
+                        >
+                          Pendente
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant='outline'
+                          className='inline-flex min-w-30 items-center justify-center border-chart-2/40 bg-chart-2/15 px-2 py-1 text-[11px] font-medium text-chart-2'
+                        >
+                          Não contratou
+                        </Badge>
+                      )}
+
+                      <Link href={`/admin/orders/${u.orderId}`}>
+                        <Button className='h-9' variant='outline'>
+                          Ver
+                        </Button>
+                      </Link>
+                    </div>
                   }
                 />
               ))}
+
+              {expanded && upsells.length > MAX_EXPANDED ? (
+                <p className='text-xs text-muted-foreground'>
+                  Mostrando {MAX_EXPANDED} de {upsells.length}.
+                </p>
+              ) : null}
             </div>
           )}
         </ListShell>
@@ -349,13 +433,7 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
         <ListShell
           title='Leads novos'
           subtitle={activeMeta.hint}
-          footer={
-            <Link href='/admin/leads'>
-              <Button variant='outline' className='h-9 gap-2'>
-                Ver todos <ArrowRight className='h-4 w-4' />
-              </Button>
-            </Link>
-          }
+          footer={footerLeadsOnly(leads.length)}
         >
           {leads.length === 0 ? (
             <div className='rounded-xl border bg-muted/20 px-3 py-3'>
@@ -365,7 +443,7 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
             </div>
           ) : (
             <div className='grid gap-2'>
-              {leads.slice(0, 8).map((l) => (
+              {sliceForView(leads).map((l) => (
                 <Row
                   key={l.id}
                   title={`${l.name} • ${l.email}`}
@@ -387,6 +465,12 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
                   }
                 />
               ))}
+
+              {expanded && leads.length > MAX_EXPANDED ? (
+                <p className='text-xs text-muted-foreground'>
+                  Mostrando {MAX_EXPANDED} de {leads.length}.
+                </p>
+              ) : null}
             </div>
           )}
         </ListShell>
