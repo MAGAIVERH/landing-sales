@@ -11,7 +11,6 @@ import {
   User,
   Globe,
   Phone,
-  Mail,
   Instagram,
   Image as ImageIcon,
   Palette,
@@ -102,16 +101,25 @@ const SectionCard = ({
   icon: Icon,
   children,
   rightSlot,
+  className,
+  bodyClassName,
 }: {
   title: string;
   subtitle?: string;
   icon: React.ElementType;
   children: React.ReactNode;
   rightSlot?: React.ReactNode;
+  className?: string;
+  bodyClassName?: string;
 }) => {
   return (
-    <Card className='rounded-2xl border bg-card shadow-sm'>
-      <div className='flex items-start justify-between gap-3 p-4 sm:p-5'>
+    <Card
+      className={[
+        'flex flex-col rounded-2xl border bg-card shadow-sm',
+        className ?? '',
+      ].join(' ')}
+    >
+      <div className='flex items-start justify-between gap-3 px-4  sm:px-5 '>
         <div className='flex items-start gap-3'>
           <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-muted/40'>
             <Icon className='h-5 w-5 text-foreground/80' />
@@ -130,7 +138,12 @@ const SectionCard = ({
 
       <Separator />
 
-      <div className='p-4 sm:p-5'>{children}</div>
+      {/* corpo flex-1 + min-h-0 para permitir overflow correto */}
+      <div
+        className={['min-h-0 flex-1 p-4 sm:p-5', bodyClassName ?? ''].join(' ')}
+      >
+        {children}
+      </div>
     </Card>
   );
 };
@@ -165,24 +178,26 @@ export default async function OrderDetailsPage({
   const total = formatBRL(order.amountTotal);
 
   const briefing = order.briefing as any;
-  const briefingStatus = briefing?.status ?? (briefing ? 'OK' : '—');
+  const briefingStatus = briefing?.status ?? (briefing ? 'OK' : '-');
 
   const payload = getBriefingPayload(briefing);
   const data = isPlainObject(payload)
     ? (payload as Record<string, unknown>)
     : null;
 
-  // ===== MAPEAMENTO PARA “ADMIN READ MODE” (labels humanas) =====
+  //  MAPEAMENTO PARA “ADMIN READ MODE” (labels humanas)
   const contactName = data
     ? (pick(data, ['contactName', 'name', 'ownerName', 'fullName']) as
         | string
         | null)
     : null;
+
   const businessName = data
     ? (pick(data, ['businessName', 'companyName', 'brandName']) as
         | string
         | null)
     : null;
+
   const niche = data
     ? (pick(data, ['niche', 'segment', 'specialty']) as string | null)
     : null;
@@ -190,9 +205,11 @@ export default async function OrderDetailsPage({
   const email = data
     ? (pick(data, ['email', 'contactEmail']) as string | null)
     : null;
+
   const whatsapp = data
     ? (pick(data, ['whatsapp', 'phone', 'contactPhone']) as string | null)
     : null;
+
   const phone = data
     ? (pick(data, ['phone', 'telephone', 'contactPhone']) as string | null)
     : null;
@@ -204,6 +221,7 @@ export default async function OrderDetailsPage({
   const instagram = data
     ? (pick(data, ['instagram', 'insta']) as string | null)
     : null;
+
   const currentWebsite = data
     ? (pick(data, ['currentWebsite', 'domain', 'website', 'site']) as
         | string
@@ -213,6 +231,7 @@ export default async function OrderDetailsPage({
   const logoUrl = data
     ? (pick(data, ['logoUrl', 'logo', 'logoURL']) as string | null)
     : null;
+
   const colors = data ? pick(data, ['colors', 'brandColors']) : null;
 
   const address = data
@@ -222,6 +241,7 @@ export default async function OrderDetailsPage({
   const references = data
     ? pick(data, ['references', 'referenceSites', 'inspirations'])
     : null;
+
   const services = data ? pick(data, ['services', 'products', 'menu']) : null;
 
   const extraNotes = data
@@ -242,6 +262,16 @@ export default async function OrderDetailsPage({
   const websiteUrl = currentWebsite ? normalizeUrl(currentWebsite) : null;
   const logoHref = logoUrl ? normalizeUrl(logoUrl) : null;
 
+  // Config do carrossel
+  const carouselItemClass = 'snap-start shrink-0 w-[360px] lg:w-[380px]';
+
+  // Altura única para todos os cards (experiência consistente)
+  const cardHeightClass = 'h-[420px]';
+
+  // Corpo com scroll vertical quando necessário
+  const cardBodyScrollClass =
+    'overflow-y-auto pr-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+
   return (
     <div className='grid gap-6'>
       {/* Top bar */}
@@ -250,6 +280,7 @@ export default async function OrderDetailsPage({
           <div className='min-w-0'>
             <div className='flex flex-wrap items-center gap-2'>
               <Badge variant='secondary'>Pedido</Badge>
+
               <Badge variant='outline' className='truncate'>
                 {order.id}
               </Badge>
@@ -271,6 +302,7 @@ export default async function OrderDetailsPage({
             <h1 className='mt-3 text-xl font-semibold tracking-tight'>
               {customerEmail} • {productName}
             </h1>
+
             <p className='mt-1 text-sm text-muted-foreground'>
               Tela administrativa de leitura. Aqui você consulta o briefing sem
               risco de editar.
@@ -302,270 +334,355 @@ export default async function OrderDetailsPage({
         </div>
       </Card>
 
-      {/* Resumo do pedido */}
-      <div className='grid gap-4 lg:grid-cols-3'>
-        <SectionCard
-          title='Resumo'
-          subtitle='Pedido e cliente.'
-          icon={CreditCard}
-        >
-          <div className='grid gap-2'>
-            <Row label='Cliente' value={customerEmail} />
-            <Row label='Telefone (lead)' value={customerPhone || '-'} />
-            <Row label='Produto' value={productName} />
-            <Row label='Total' value={total} />
-            <Row label='Status do pedido' value={order.status} />
-            <Row label='Pago em' value={isoDate(order.paidAt)} />
-          </div>
-        </SectionCard>
+      {/* Carrossel com 8 cards (3 visíveis no desktop) */}
+      <div className='grid gap-2'>
+        <div className='flex items-center justify-between'>
+          <p className='text-sm font-semibold'>Visão do pedido</p>
+          <p className='text-xs text-muted-foreground'>
+            Role para a esquerda para navegar.
+          </p>
+        </div>
 
-        <SectionCard
-          title='Ação'
-          subtitle='Próximo passo para produção.'
-          icon={CheckCircle2}
+        <div
+          className={[
+            'flex gap-4 overflow-x-auto pb-2',
+            'snap-x snap-mandatory scroll-smooth',
+            'cursor-grab active:cursor-grabbing',
+            '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+          ].join(' ')}
         >
-          <div className='grid gap-2'>
-            <div className='rounded-xl border bg-muted/20 px-3 py-3'>
-              <p className='text-sm font-medium'>Fluxo recomendado</p>
-              <p className='mt-1 text-sm text-muted-foreground'>
-                Leia o briefing aqui. Só use “Editar briefing” se precisar
-                corrigir algo.
-              </p>
-            </div>
-
-            <Link href='/admin'>
-              <Button className='h-10 w-full gap-2'>
-                Voltar ao dashboard <ArrowRight className='h-4 w-4' />
-              </Button>
-            </Link>
+          {/* 1) Resumo */}
+          <div className={carouselItemClass}>
+            <SectionCard
+              title='Resumo'
+              subtitle='Pedido e cliente.'
+              icon={CreditCard}
+              className={cardHeightClass}
+              bodyClassName={cardBodyScrollClass}
+            >
+              <div className='grid gap-2'>
+                <Row label='Cliente' value={customerEmail} />
+                <Row label='Telefone (lead)' value={customerPhone || '-'} />
+                <Row label='Produto' value={productName} />
+                <Row label='Total' value={total} />
+                <Row label='Status do pedido' value={order.status} />
+                <Row label='Pago em' value={isoDate(order.paidAt)} />
+              </div>
+            </SectionCard>
           </div>
-        </SectionCard>
 
-        <SectionCard
-          title='Briefing'
-          subtitle='Status do onboarding.'
-          icon={ClipboardList}
-        >
-          <div className='grid gap-2'>
-            <Row label='Status' value={String(briefingStatus)} />
-            <Row label='Criado em' value={isoDate(briefing?.createdAt)} />
-            <Row label='Atualizado em' value={isoDate(briefing?.updatedAt)} />
+          {/* 2) Ação */}
+          <div className={carouselItemClass}>
+            <SectionCard
+              title='Ação'
+              subtitle='Próximo passo para produção.'
+              icon={CheckCircle2}
+              className={cardHeightClass}
+              bodyClassName={cardBodyScrollClass}
+            >
+              <div className='grid gap-2'>
+                <div className='rounded-xl border bg-muted/20 px-3 py-3'>
+                  <p className='text-sm font-medium'>
+                    Como executar este pedido
+                  </p>
+
+                  <ul className='mt-2 grid gap-2 text-sm text-muted-foreground'>
+                    <li>
+                      1) Revise os cards abaixo (Identidade, Contato, Presença
+                      online, Marca e Observações).
+                    </li>
+                    <li>
+                      2) Se algo importante estiver faltando, use o
+                      WhatsApp/E-mail do card “Contato” para pedir complemento.
+                    </li>
+                    <li>
+                      3) Se você precisar ajustar informações manualmente, use
+                      “Editar briefing” (topo da página).
+                    </li>
+                  </ul>
+                </div>
+
+                <div className='rounded-xl border bg-muted/10 px-3 py-3'>
+                  <p className='text-sm font-medium'>Dica</p>
+                  <p className='mt-1 text-sm text-muted-foreground'>
+                    O campo “Notas do cliente” pode ser longo (regras do
+                    negócio, preços, horários). Ele é a referência principal do
+                    escopo.
+                  </p>
+                </div>
+              </div>
+            </SectionCard>
           </div>
-        </SectionCard>
+
+          {/* 3) Briefing Status */}
+          <div className={carouselItemClass}>
+            <SectionCard
+              title='Briefing'
+              subtitle='Status do onboarding.'
+              icon={ClipboardList}
+              className={cardHeightClass}
+              bodyClassName={cardBodyScrollClass}
+            >
+              <div className='grid gap-2'>
+                <Row label='Status' value={String(briefingStatus)} />
+                <Row label='Criado em' value={isoDate(briefing?.createdAt)} />
+                <Row
+                  label='Atualizado em'
+                  value={isoDate(briefing?.updatedAt)}
+                />
+              </div>
+            </SectionCard>
+          </div>
+
+          {/* 4) Identidade */}
+          <div className={carouselItemClass}>
+            <SectionCard
+              title='Identidade'
+              subtitle='Quem é o cliente e qual negócio é.'
+              icon={User}
+              className={cardHeightClass}
+              bodyClassName={cardBodyScrollClass}
+            >
+              {!briefing ? (
+                <Empty text='Sem briefing disponível.' />
+              ) : (
+                <div className='grid gap-2'>
+                  {contactName ? (
+                    <Row label='Nome do contato' value={contactName} />
+                  ) : null}
+                  {businessName ? (
+                    <Row label='Nome do negócio' value={businessName} />
+                  ) : null}
+                  {niche ? (
+                    <Row
+                      label='Nicho / especialidade'
+                      value={<Badge variant='secondary'>{niche}</Badge>}
+                    />
+                  ) : null}
+                  {address ? <Row label='Localidade' value={address} /> : null}
+
+                  {!contactName && !businessName && !niche && !address ? (
+                    <Empty text='Nenhuma informação de identidade preenchida.' />
+                  ) : null}
+                </div>
+              )}
+            </SectionCard>
+          </div>
+
+          {/* 5) Contato */}
+          <div className={carouselItemClass}>
+            <SectionCard
+              title='Contato'
+              subtitle='Como falar com o cliente.'
+              icon={Phone}
+              className={cardHeightClass}
+              bodyClassName={cardBodyScrollClass}
+              rightSlot={
+                contactPreference ? (
+                  <Badge variant='secondary'>
+                    {String(contactPreference).toUpperCase()}
+                  </Badge>
+                ) : null
+              }
+            >
+              {!briefing ? (
+                <Empty text='Sem briefing disponível.' />
+              ) : (
+                <div className='grid gap-2'>
+                  {email ? (
+                    <Row
+                      label='E-mail'
+                      value={
+                        <a className='hover:underline' href={`mailto:${email}`}>
+                          {email}
+                        </a>
+                      }
+                    />
+                  ) : null}
+
+                  {whatsapp ? (
+                    <Row label='WhatsApp' value={String(whatsapp)} />
+                  ) : null}
+                  {phone ? (
+                    <Row label='Telefone' value={String(phone)} />
+                  ) : null}
+
+                  {!email && !whatsapp && !phone ? (
+                    <Empty text='Nenhum contato preenchido.' />
+                  ) : null}
+                </div>
+              )}
+            </SectionCard>
+          </div>
+
+          {/* 6) Presença online */}
+          <div className={carouselItemClass}>
+            <SectionCard
+              title='Presença online'
+              subtitle='Links úteis para referência.'
+              icon={Globe}
+              className={cardHeightClass}
+              bodyClassName={cardBodyScrollClass}
+            >
+              {!briefing ? (
+                <Empty text='Sem briefing disponível.' />
+              ) : (
+                <div className='grid gap-2'>
+                  {websiteUrl ? (
+                    <Row
+                      label='Site atual / domínio'
+                      value={
+                        <a
+                          className='hover:underline'
+                          href={websiteUrl}
+                          target='_blank'
+                          rel='noreferrer'
+                        >
+                          {currentWebsite}
+                        </a>
+                      }
+                    />
+                  ) : null}
+
+                  {instagramUrl ? (
+                    <Row
+                      label='Instagram'
+                      value={
+                        <a
+                          className='inline-flex items-center justify-end gap-2 hover:underline'
+                          href={instagramUrl}
+                          target='_blank'
+                          rel='noreferrer'
+                        >
+                          <Instagram className='h-4 w-4' />
+                          {instagram}
+                        </a>
+                      }
+                    />
+                  ) : null}
+
+                  {references ? (
+                    <Row
+                      label='Referências'
+                      value={
+                        Array.isArray(references) ? (
+                          <span className='text-sm'>
+                            {references.join(', ')}
+                          </span>
+                        ) : (
+                          <span className='text-sm'>{String(references)}</span>
+                        )
+                      }
+                    />
+                  ) : null}
+
+                  {!websiteUrl && !instagramUrl && !references ? (
+                    <Empty text='Nenhuma presença online informada.' />
+                  ) : null}
+                </div>
+              )}
+            </SectionCard>
+          </div>
+
+          {/* 7) Marca */}
+          <div className={carouselItemClass}>
+            <SectionCard
+              title='Marca'
+              subtitle='Elementos de identidade visual.'
+              icon={Palette}
+              className={cardHeightClass}
+              bodyClassName={cardBodyScrollClass}
+            >
+              {!briefing ? (
+                <Empty text='Sem briefing disponível.' />
+              ) : (
+                <div className='grid gap-2'>
+                  {logoHref ? (
+                    <Row
+                      label='Logo'
+                      value={
+                        <a
+                          className='inline-flex items-center justify-end gap-2 hover:underline'
+                          href={logoHref}
+                          target='_blank'
+                          rel='noreferrer'
+                        >
+                          <ImageIcon className='h-4 w-4' />
+                          Abrir logo
+                        </a>
+                      }
+                    />
+                  ) : null}
+
+                  {colors ? (
+                    <Row
+                      label='Cores'
+                      value={
+                        Array.isArray(colors) ? (
+                          <span className='text-sm'>{colors.join(', ')}</span>
+                        ) : (
+                          <span className='text-sm'>{String(colors)}</span>
+                        )
+                      }
+                    />
+                  ) : null}
+
+                  {!logoHref && !colors ? (
+                    <Empty text='Marca ainda não informada.' />
+                  ) : null}
+                </div>
+              )}
+            </SectionCard>
+          </div>
+
+          {/* 8) Observações e escopo */}
+          <div className={carouselItemClass}>
+            <SectionCard
+              title='Observações e escopo'
+              subtitle='O que influencia a entrega.'
+              icon={StickyNote}
+              className={cardHeightClass}
+              bodyClassName={cardBodyScrollClass}
+            >
+              {!briefing ? (
+                <Empty text='Sem briefing disponível.' />
+              ) : (
+                <div className='grid gap-2'>
+                  {services ? (
+                    <Row
+                      label='Serviços / produtos'
+                      value={
+                        Array.isArray(services) ? (
+                          <span className='text-sm'>{services.join(', ')}</span>
+                        ) : (
+                          <span className='text-sm whitespace-pre-wrap'>
+                            {String(services)}
+                          </span>
+                        )
+                      }
+                    />
+                  ) : null}
+
+                  {extraNotes ? (
+                    <div className='rounded-xl border bg-card px-3 py-3'>
+                      <p className='text-sm text-muted-foreground'>
+                        Notas do cliente
+                      </p>
+                      <div className='mt-2 whitespace-pre-wrap text-sm font-medium text-foreground'>
+                        {extraNotes}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {!services && !extraNotes ? (
+                    <Empty text='Sem observações adicionais.' />
+                  ) : null}
+                </div>
+              )}
+            </SectionCard>
+          </div>
+        </div>
       </div>
-
-      {/* Briefing - modo leitura, organizado */}
-      <div className='grid gap-4 lg:grid-cols-2'>
-        <SectionCard
-          title='Identidade'
-          subtitle='Quem é o cliente e qual negócio é.'
-          icon={User}
-        >
-          {!briefing ? (
-            <Empty text='Sem briefing disponível.' />
-          ) : (
-            <div className='grid gap-2'>
-              {contactName ? (
-                <Row label='Nome do contato' value={contactName} />
-              ) : null}
-              {businessName ? (
-                <Row label='Nome do negócio' value={businessName} />
-              ) : null}
-              {niche ? (
-                <Row
-                  label='Nicho / especialidade'
-                  value={<Badge variant='secondary'>{niche}</Badge>}
-                />
-              ) : null}
-              {address ? <Row label='Localidade' value={address} /> : null}
-
-              {!contactName && !businessName && !niche && !address ? (
-                <Empty text='Nenhuma informação de identidade preenchida.' />
-              ) : null}
-            </div>
-          )}
-        </SectionCard>
-
-        <SectionCard
-          title='Contato'
-          subtitle='Como falar com o cliente.'
-          icon={Phone}
-          rightSlot={
-            contactPreference ? (
-              <Badge variant='secondary'>
-                {String(contactPreference).toUpperCase()}
-              </Badge>
-            ) : null
-          }
-        >
-          {!briefing ? (
-            <Empty text='Sem briefing disponível.' />
-          ) : (
-            <div className='grid gap-2'>
-              {email ? (
-                <Row
-                  label='E-mail'
-                  value={
-                    <a className='hover:underline' href={`mailto:${email}`}>
-                      {email}
-                    </a>
-                  }
-                />
-              ) : null}
-
-              {whatsapp ? (
-                <Row label='WhatsApp' value={String(whatsapp)} />
-              ) : null}
-              {phone ? <Row label='Telefone' value={String(phone)} /> : null}
-
-              {!email && !whatsapp && !phone ? (
-                <Empty text='Nenhum contato preenchido.' />
-              ) : null}
-            </div>
-          )}
-        </SectionCard>
-
-        <SectionCard
-          title='Presença online'
-          subtitle='Links úteis para referência.'
-          icon={Globe}
-        >
-          {!briefing ? (
-            <Empty text='Sem briefing disponível.' />
-          ) : (
-            <div className='grid gap-2'>
-              {websiteUrl ? (
-                <Row
-                  label='Site atual / domínio'
-                  value={
-                    <a
-                      className='hover:underline'
-                      href={websiteUrl}
-                      target='_blank'
-                      rel='noreferrer'
-                    >
-                      {currentWebsite}
-                    </a>
-                  }
-                />
-              ) : null}
-
-              {instagramUrl ? (
-                <Row
-                  label='Instagram'
-                  value={
-                    <a
-                      className='inline-flex items-center gap-2 hover:underline'
-                      href={instagramUrl}
-                      target='_blank'
-                      rel='noreferrer'
-                    >
-                      <Instagram className='h-4 w-4' />
-                      {instagram}
-                    </a>
-                  }
-                />
-              ) : null}
-
-              {references ? (
-                <Row
-                  label='Referências'
-                  value={
-                    Array.isArray(references) ? (
-                      <span className='text-sm'>{references.join(', ')}</span>
-                    ) : (
-                      <span className='text-sm'>{String(references)}</span>
-                    )
-                  }
-                />
-              ) : null}
-
-              {!websiteUrl && !instagramUrl && !references ? (
-                <Empty text='Nenhuma presença online informada.' />
-              ) : null}
-            </div>
-          )}
-        </SectionCard>
-
-        <SectionCard
-          title='Marca'
-          subtitle='Elementos de identidade visual.'
-          icon={Palette}
-        >
-          {!briefing ? (
-            <Empty text='Sem briefing disponível.' />
-          ) : (
-            <div className='grid gap-2'>
-              {logoHref ? (
-                <Row
-                  label='Logo'
-                  value={
-                    <a
-                      className='inline-flex items-center gap-2 hover:underline'
-                      href={logoHref}
-                      target='_blank'
-                      rel='noreferrer'
-                    >
-                      <ImageIcon className='h-4 w-4' />
-                      Abrir logo
-                    </a>
-                  }
-                />
-              ) : null}
-
-              {colors ? (
-                <Row
-                  label='Cores'
-                  value={
-                    Array.isArray(colors) ? (
-                      <span className='text-sm'>{colors.join(', ')}</span>
-                    ) : (
-                      <span className='text-sm'>{String(colors)}</span>
-                    )
-                  }
-                />
-              ) : null}
-
-              {!logoHref && !colors ? (
-                <Empty text='Marca ainda não informada.' />
-              ) : null}
-            </div>
-          )}
-        </SectionCard>
-      </div>
-
-      <SectionCard
-        title='Observações e escopo'
-        subtitle='O que influencia a entrega.'
-        icon={StickyNote}
-      >
-        {!briefing ? (
-          <Empty text='Sem briefing disponível.' />
-        ) : (
-          <div className='grid gap-2'>
-            {services ? (
-              <Row
-                label='Serviços / produtos'
-                value={
-                  Array.isArray(services) ? (
-                    <span className='text-sm'>{services.join(', ')}</span>
-                  ) : (
-                    <span className='text-sm'>{String(services)}</span>
-                  )
-                }
-              />
-            ) : null}
-
-            {extraNotes ? (
-              <Row label='Notas do cliente' value={extraNotes} />
-            ) : null}
-
-            {!services && !extraNotes ? (
-              <Empty text='Sem observações adicionais.' />
-            ) : null}
-          </div>
-        )}
-      </SectionCard>
 
       {/* Rodapé */}
       <Card className='rounded-2xl border bg-card p-4 shadow-sm sm:p-5'>
