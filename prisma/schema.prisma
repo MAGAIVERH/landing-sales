@@ -313,3 +313,34 @@ model OrderAccessLink {
   @@index([orderId])
   @@index([expiresAt])
 }
+
+
+enum AdminWorkItemKind {
+  READY
+  STALLED
+  LEAD
+  UPSELL
+}
+
+enum AdminWorkItemStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  SNOOZED
+}
+
+model AdminWorkItem {
+  id          String             @id @default(cuid())
+  kind        AdminWorkItemKind
+  refId       String
+  status      AdminWorkItemStatus @default(TODO)
+  note        String?
+  snoozeUntil DateTime?
+  doneAt      DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([kind, refId])
+  @@index([kind, status])
+}
