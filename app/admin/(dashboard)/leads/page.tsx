@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { LeadRowActions } from './components/lead-row-actions';
+import { LeadStatusSelect } from './components/lead-status-select';
+import { LeadMessagePreview } from './components/lead-message-preview';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +26,35 @@ const formatDateTime = (value: Date) => {
   }).format(value);
 };
 
+const normalizeLeadStatus = (raw: string) => {
+  const v = (raw ?? '').trim();
+  if (!v) return '';
+
+  const lower = v.toLowerCase();
+  if (lower === 'todos') return '';
+
+  const upper = v.toUpperCase();
+
+  if (
+    upper === 'NEW' ||
+    upper === 'CONTACTED' ||
+    upper === 'QUALIFIED' ||
+    upper === 'WON' ||
+    upper === 'LOST'
+  ) {
+    return upper;
+  }
+
+  // fallback caso algum lugar mande label em pt-br
+  if (lower === 'novo') return 'NEW';
+  if (lower === 'contatado') return 'CONTACTED';
+  if (lower === 'qualificado') return 'QUALIFIED';
+  if (lower === 'vendido') return 'WON';
+  if (lower === 'perdido') return 'LOST';
+
+  return '';
+};
+
 const getSourceLabel = (landingPath?: string | null) => {
   if (!landingPath) return 'desconhecido';
   if (landingPath === '/budget') return 'Orçamento';
@@ -39,15 +70,11 @@ export default async function AdminLeadsPage({
   const sp = await searchParams;
 
   const q = pick(sp, 'q').trim();
-  const status = pick(sp, 'status').trim(); // NEW | CONTACTED | QUALIFIED | WON | LOST | ''
+  const status = normalizeLeadStatus(pick(sp, 'status')); // NEW | CONTACTED | QUALIFIED | WON | LOST | ''
 
-  const leads = await prisma.lead.findMany({
+  const leadsRaw = await prisma.lead.findMany({
     where: {
-      ...(status
-        ? {
-            status: status as any,
-          }
-        : {}),
+      ...(status ? { status: status as any } : {}),
       ...(q
         ? {
             OR: [
@@ -61,13 +88,132 @@ export default async function AdminLeadsPage({
         : {}),
     },
     orderBy: { createdAt: 'desc' },
-    take: 50,
+    take: 200,
   });
 
+  const leadIds = leadsRaw.map((l) => l.id);
+
+  const workItems = leadIds.length
+    ? await prisma.adminWorkItem.findMany({
+        where: { kind: 'LEAD', refId: { in: leadIds } },
+        select: { refId: true, status: true, doneAt: true },
+      })
+    : [];
+
+  const doneMap = new Map<string, boolean>();
+  for (const wi of workItems) {
+    doneMap.set(wi.refId, wi.status === 'DONE' || Boolean(wi.doneAt));
+  }
+
+  const openLeads = leadsRaw
+    .filter((l) => !(doneMap.get(l.id) ?? false))
+    .slice(0, 50);
+
+  const doneLeads = leadsRaw
+    .filter((l) => doneMap.get(l.id) ?? false)
+    .slice(0, 50);
+
+  const renderTable = (rows: typeof leadsRaw, isDoneSection: boolean) => {
+    return (
+      <div className='w-full overflow-auto'>
+        <table className='w-full text-sm'>
+          <thead className='bg-muted/40 text-left'>
+            <tr>
+              <th className='px-4 py-3 font-medium'>Contato</th>
+              <th className='px-4 py-3 font-medium'>Mensagem</th>
+              <th className='px-4 py-3 font-medium'>Origem</th>
+              <th className='px-4 py-3 font-medium'>Status</th>
+              <th className='px-4 py-3 font-medium'>Data</th>
+              <th className='px-4 py-3 font-medium text-right'>Ações</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  className='px-4 py-8 text-center text-sm text-muted-foreground'
+                >
+                  Nenhum lead encontrado.
+                </td>
+              </tr>
+            ) : (
+              rows.map((lead) => {
+                const contact =
+                  lead.name?.trim() ||
+                  lead.email?.trim() ||
+                  lead.phone?.trim() ||
+                  'Sem identificação';
+
+                const msgPreview = (lead.message ?? '').trim();
+
+                return (
+                  <tr key={lead.id} className='border-t align-top'>
+                    <td className='px-4 py-3'>
+                      <div className='space-y-1'>
+                        <p className='font-medium'>{contact}</p>
+
+                        <div className='space-y-0.5 text-xs text-muted-foreground'>
+                          {lead.email ? <p>{lead.email}</p> : null}
+                          {lead.phone ? <p>{lead.phone}</p> : null}
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className='px-4 py-3'>
+                      <LeadMessagePreview message={msgPreview} />
+                    </td>
+
+                    <td className='px-4 py-3'>
+                      <Badge variant='secondary'>
+                        {getSourceLabel(lead.landingPath)}
+                      </Badge>
+                    </td>
+
+                    <td className='px-4 py-3'>
+                      <LeadStatusSelect
+                        leadId={lead.id}
+                        defaultStatus={lead.status as any}
+                        className='w-42.5'
+                      />
+                    </td>
+
+                    <td className='px-4 py-3 text-muted-foreground'>
+                      {formatDateTime(lead.createdAt)}
+                    </td>
+
+                    <td className='px-4 py-3'>
+                      <div className='flex justify-end'>
+                        <LeadRowActions
+                          isDone={isDoneSection}
+                          lead={{
+                            id: lead.id,
+                            name: lead.name ?? '',
+                            email: lead.email ?? '',
+                            phone: lead.phone ?? '',
+                            message: lead.message ?? '',
+                            landingPath: lead.landingPath ?? '',
+                            source: lead.source ?? '',
+                            createdAt: lead.createdAt.toISOString(),
+                          }}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
-    <main className='mx-auto w-full max-w-7xl px-4 py-8 md:px-8'>
+    <main className='mx-auto w-full max-w-7xl'>
       <div className='flex flex-col gap-2'>
-        <h1 className='text-2xl font-semibold'>Leads</h1>
+        <h1 className='text-xl font-semibold'>Leads</h1>
         <p className='text-sm text-muted-foreground'>
           Triagem rápida para atendimento e follow-up.
         </p>
@@ -98,11 +244,11 @@ export default async function AdminLeadsPage({
               className='h-10 rounded-md border bg-background px-3 text-sm'
             >
               <option value=''>Todos</option>
-              <option value='NEW'>NEW</option>
-              <option value='CONTACTED'>CONTACTED</option>
-              <option value='QUALIFIED'>QUALIFIED</option>
-              <option value='WON'>WON</option>
-              <option value='LOST'>LOST</option>
+              <option value='NEW'>Novo</option>
+              <option value='CONTACTED'>Contatado</option>
+              <option value='QUALIFIED'>Qualificado</option>
+              <option value='WON'>Vendido</option>
+              <option value='LOST'>Perdido</option>
             </select>
           </div>
 
@@ -116,11 +262,11 @@ export default async function AdminLeadsPage({
 
       <div className='mt-6'>
         <Card className='overflow-hidden'>
-          <div className='flex items-center justify-between gap-3 p-4'>
+          <div className='flex items-center justify-between gap-3 px-4'>
             <div className='space-y-1'>
-              <p className='text-sm font-semibold'>Últimos leads</p>
+              <p className='text-sm font-semibold'>Leads</p>
               <p className='text-xs text-muted-foreground'>
-                Mostrando {leads.length} (máx. 50)
+                Ativos: {openLeads.length} • Concluídos: {doneLeads.length}
               </p>
             </div>
 
@@ -133,101 +279,18 @@ export default async function AdminLeadsPage({
 
           <Separator />
 
-          <div className='w-full overflow-auto'>
-            <table className='w-full text-sm'>
-              <thead className='bg-muted/40 text-left'>
-                <tr>
-                  <th className='px-4 py-3 font-medium'>Contato</th>
-                  <th className='px-4 py-3 font-medium'>Mensagem</th>
-                  <th className='px-4 py-3 font-medium'>Origem</th>
-                  <th className='px-4 py-3 font-medium'>Status</th>
-                  <th className='px-4 py-3 font-medium'>Data</th>
-                  <th className='px-4 py-3 font-medium text-right'>Ações</th>
-                </tr>
-              </thead>
+          {renderTable(openLeads, false)}
 
-              <tbody>
-                {leads.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className='px-4 py-8 text-center text-sm text-muted-foreground'
-                    >
-                      Nenhum lead encontrado.
-                    </td>
-                  </tr>
-                ) : (
-                  leads.map((lead) => {
-                    const contact =
-                      lead.name?.trim() ||
-                      lead.email?.trim() ||
-                      lead.phone?.trim() ||
-                      'Sem identificação';
+          <Separator />
 
-                    const msgPreview = (lead.message ?? '').trim();
-
-                    return (
-                      <tr key={lead.id} className='border-t align-top'>
-                        <td className='px-4 py-3'>
-                          <div className='space-y-1'>
-                            <p className='font-medium'>{contact}</p>
-
-                            <div className='space-y-0.5 text-xs text-muted-foreground'>
-                              {lead.email ? <p>{lead.email}</p> : null}
-                              {lead.phone ? <p>{lead.phone}</p> : null}
-                            </div>
-                          </div>
-                        </td>
-
-                        <td className='px-4 py-3'>
-                          {msgPreview ? (
-                            <p className='text-muted-foreground line-clamp-3 max-w-130'>
-                              {msgPreview}
-                            </p>
-                          ) : (
-                            <p className='text-muted-foreground'>
-                              Sem mensagem
-                            </p>
-                          )}
-                        </td>
-
-                        <td className='px-4 py-3'>
-                          <Badge variant='secondary'>
-                            {getSourceLabel(lead.landingPath)}
-                          </Badge>
-                        </td>
-
-                        <td className='px-4 py-3'>
-                          <Badge>{lead.status}</Badge>
-                        </td>
-
-                        <td className='px-4 py-3 text-muted-foreground'>
-                          {formatDateTime(lead.createdAt)}
-                        </td>
-
-                        <td className='px-4 py-3'>
-                          <div className='flex justify-end'>
-                            <LeadRowActions
-                              lead={{
-                                id: lead.id,
-                                name: lead.name ?? '',
-                                email: lead.email ?? '',
-                                phone: lead.phone ?? '',
-                                message: lead.message ?? '',
-                                landingPath: lead.landingPath ?? '',
-                                source: lead.source ?? '',
-                                createdAt: lead.createdAt.toISOString(),
-                              }}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+          <div className='p-4'>
+            <p className='text-sm font-semibold'>Concluídos</p>
+            <p className='text-xs text-muted-foreground'>
+              Leads marcados como feitos (você pode reabrir).
+            </p>
           </div>
+
+          {renderTable(doneLeads, true)}
         </Card>
       </div>
     </main>
