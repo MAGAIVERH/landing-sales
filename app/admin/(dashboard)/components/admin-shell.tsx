@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Shield, LogOut } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -11,11 +10,11 @@ type AdminShellProps = {
 
 export const AdminShell = ({ children }: AdminShellProps) => {
   return (
-    <div className='min-h-screen bg-background'>
-      <div className='w-full px-4 py-6 md:px-6 lg:px-8"'>
-        <div className='grid gap-6 md:grid-cols-[260px_1fr]'>
+    <div className='h-dvh overflow-hidden bg-primary'>
+      <div className='h-full w-full px-4 py-6 md:px-6 lg:px-8'>
+        <div className='grid h-full gap-6 md:grid-cols-[260px_1fr]'>
           {/* Sidebar */}
-          <aside className='rounded-2xl border bg-card p-4'>
+          <aside className='no-scrollbar overflow-y-auto rounded-2xl border bg-card p-4'>
             <div className='flex items-center gap-2'>
               <span className='inline-flex h-9 w-9 items-center justify-center rounded-xl border bg-background'>
                 <Shield className='h-5 w-5' />
@@ -36,7 +35,7 @@ export const AdminShell = ({ children }: AdminShellProps) => {
             <Separator className='my-4' />
 
             {/* Logout (server-safe) */}
-            <form action='/api/admin/logout' method='POST'>
+            <form action='/' method='POST'>
               <Button type='submit' variant='outline' className='w-full'>
                 <LogOut className='h-4 w-4' />
                 Sair
@@ -51,7 +50,7 @@ export const AdminShell = ({ children }: AdminShellProps) => {
           </aside>
 
           {/* Conteúdo */}
-          <section className='rounded-2xl border bg-card p-4 md:p-6'>
+          <section className='no-scrollbar overflow-y-auto rounded-2xl border bg-card p-4 md:p-6'>
             {children}
           </section>
         </div>

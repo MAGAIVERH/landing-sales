@@ -146,6 +146,24 @@ export default async function AdminPage() {
     }),
   ]);
 
+  // ✅ Visão geral: no Workflow, mostrar apenas leads NÃO finalizados (adminWorkItem != DONE)
+  const recentLeadIds = recentLeads.map((l) => l.id);
+
+  const leadWorkItems = recentLeadIds.length
+    ? await prisma.adminWorkItem.findMany({
+        where: { kind: 'LEAD', refId: { in: recentLeadIds } },
+        select: { refId: true, status: true },
+      })
+    : [];
+
+  const leadWorkStatusById = new Map(
+    leadWorkItems.map((w) => [w.refId, w.status]),
+  );
+
+  const activeRecentLeads = recentLeads.filter(
+    (l) => (leadWorkStatusById.get(l.id) ?? 'TODO') !== 'DONE',
+  );
+
   // 4) NÃO CONTRATOU HOSTING: pedido PAID sem nenhum registro de upsellPurchase kind=hosting
   // (sem depender de relation "upsellPurchases" no Order, porque no meu schema não existe)
   const hostingUpsellOrderIds = await prisma.upsellPurchase.findMany({
@@ -215,7 +233,7 @@ export default async function AdminPage() {
 
   const upsells = [...pending, ...notContracted];
 
-  const leads = recentLeads.map((l) => {
+  const leads = activeRecentLeads.map((l) => {
     const msg =
       `Olá! Vi sua solicitação e vou te enviar os próximos passos.\n\n` +
       `Nome: ${l.name ?? '-'}\n` +
