@@ -14,7 +14,7 @@ export const AdminShell = ({ children }: AdminShellProps) => {
       <div className='h-full w-full px-4 py-6 md:px-6 lg:px-8'>
         <div className='grid h-full gap-6 md:grid-cols-[260px_1fr]'>
           {/* Sidebar */}
-          <aside className='no-scrollbar overflow-y-auto rounded-2xl border bg-card p-4'>
+          <aside className='no-scrollbar flex h-full flex-col overflow-y-auto rounded-2xl border bg-card p-4'>
             <div className='flex items-center gap-2'>
               <span className='inline-flex h-9 w-9 items-center justify-center rounded-xl border bg-background'>
                 <Shield className='h-5 w-5' />
@@ -32,21 +32,20 @@ export const AdminShell = ({ children }: AdminShellProps) => {
 
             <AdminNav />
 
+            {/* empurra o logout para o rodapé */}
+            <div className='mt-auto' />
+
             <Separator className='my-4' />
 
             {/* Logout (server-safe) */}
             <form action='/' method='POST'>
-              <Button type='submit' variant='outline' className='w-full'>
+              <Button type='submit' variant='outline' className='w-full gap-2'>
                 <LogOut className='h-4 w-4' />
                 Sair
               </Button>
             </form>
 
-            <div className='mt-4 text-xs text-muted-foreground'>
-              Dica: use <span className='font-medium'>/admin/leads</span> para
-              triagem e <span className='font-medium'>/admin/orders</span> para
-              entrega.
-            </div>
+            {/* removido o texto "Dica..." */}
           </aside>
 
           {/* Conteúdo */}

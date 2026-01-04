@@ -37,10 +37,29 @@ const addDaysUTC = (d: Date, days: number) => {
 
 const onlyDigits = (value?: string | null) => (value ?? '').replace(/\D/g, '');
 
+const normalizeWhatsAppNumber = (value?: string | null) => {
+  let digits = onlyDigits(value);
+  if (!digits) return null;
+
+  if (digits.startsWith('55')) return digits;
+  if (digits.length === 10 || digits.length === 11) return `55${digits}`;
+  return digits;
+};
+
 const buildWhatsAppLink = (phone: string, text: string) => {
-  const digits = onlyDigits(phone);
+  const digits = normalizeWhatsAppNumber(phone);
   if (!digits) return null;
   return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+};
+
+const buildEmailLink = (to: string, subject: string, body: string) => {
+  if (!to) return null;
+  const mailto =
+    `mailto:${encodeURIComponent(to)}` +
+    `?subject=${encodeURIComponent(subject)}` +
+    `&body=${encodeURIComponent(body)}`;
+
+  return mailto;
 };
 
 export default async function AdminPage() {
@@ -49,7 +68,9 @@ export default async function AdminPage() {
   const tomorrow = addDaysUTC(today, 1);
   const start7 = addDaysUTC(today, -6);
 
-  // Promise.all só com as queries que realmente estão no array
+  const READY_PAGE_SIZE = 20;
+  const READY_PREFETCH = 60;
+
   const [
     leadsToday,
     leads7,
@@ -59,9 +80,9 @@ export default async function AdminPage() {
     onboardingPending,
     onboardingsStarted7,
     recentLeads,
-    readyForProduction,
+    readyForProductionRaw,
     stalledBriefings,
-    pendingUpsells,
+    notStartedOrders,
   ] = await Promise.all([
     prisma.lead.count({ where: { createdAt: { gte: today, lt: tomorrow } } }),
     prisma.lead.count({ where: { createdAt: { gte: start7, lt: tomorrow } } }),
@@ -97,9 +118,8 @@ export default async function AdminPage() {
       },
     }),
 
-    // 1) PRONTOS PARA PRODUÇÃO: pedido pago + briefing SUBMITTED
     prisma.order.findMany({
-      take: 12,
+      take: READY_PREFETCH,
       orderBy: { paidAt: 'desc' },
       where: {
         status: 'PAID',
@@ -112,7 +132,6 @@ export default async function AdminPage() {
       },
     }),
 
-    // 2) PARADOS: briefing DRAFT atualizado há 2+ dias
     prisma.briefing.findMany({
       take: 12,
       orderBy: { updatedAt: 'asc' },
@@ -129,24 +148,22 @@ export default async function AdminPage() {
         },
       },
     }),
-
-    // 3) UPSELL PENDENTE (tentou comprar e parou)
-    prisma.upsellPurchase.findMany({
+    // ✅ NOVO: pedidos pagos sem briefing (NOT_STARTED)
+    prisma.order.findMany({
       take: 12,
-      orderBy: { createdAt: 'desc' },
-      where: { kind: 'hosting', status: 'PENDING' },
+      orderBy: { paidAt: 'desc' },
+      where: {
+        status: 'PAID',
+        briefing: null,
+        paidAt: { gte: start7, lt: tomorrow }, // mantém em 7 dias, como o resto do dashboard
+      },
       include: {
-        order: {
-          include: {
-            lead: true,
-            price: { include: { product: true } },
-          },
-        },
+        lead: true,
+        price: { include: { product: true } },
       },
     }),
   ]);
 
-  // ✅ Visão geral: no Workflow, mostrar apenas leads NÃO finalizados (adminWorkItem != DONE)
   const recentLeadIds = recentLeads.map((l) => l.id);
 
   const leadWorkItems = recentLeadIds.length
@@ -164,33 +181,112 @@ export default async function AdminPage() {
     (l) => (leadWorkStatusById.get(l.id) ?? 'TODO') !== 'DONE',
   );
 
-  // 4) NÃO CONTRATOU HOSTING: pedido PAID sem nenhum registro de upsellPurchase kind=hosting
-  // (sem depender de relation "upsellPurchases" no Order, porque no meu schema não existe)
-  const hostingUpsellOrderIds = await prisma.upsellPurchase.findMany({
-    where: { kind: 'hosting' }, // qualquer status (PENDING ou PAID)
-    select: { orderId: true },
-  });
+  const readyIdsRaw = readyForProductionRaw.map((o) => o.id);
 
-  const hostingIds = hostingUpsellOrderIds.map((x) => x.orderId);
+  const readyDoneRows = readyIdsRaw.length
+    ? await prisma.adminWorkItem.findMany({
+        where: {
+          kind: 'READY',
+          refId: { in: readyIdsRaw },
+          status: 'DONE',
+        },
+        select: { refId: true },
+      })
+    : [];
 
-  const notContractedHostingOrders = await prisma.order.findMany({
-    take: 12,
-    orderBy: { paidAt: 'desc' },
+  const readyDoneSet = new Set(readyDoneRows.map((w) => w.refId));
+
+  const readyForProduction = readyForProductionRaw
+    .filter((o) => !readyDoneSet.has(o.id))
+    .slice(0, READY_PAGE_SIZE);
+
+  // =========================
+  // ✅ UPSSELL (VISÃO GERAL) — CONECTADO COM OPERAÇÃO
+  // - Busca tentativas reais (PENDING) + "não contratou"
+  // - Filtra itens marcados como DONE em AdminWorkItem (kind UPSELL)
+  // - Prefetch maior para permitir paginação (20 por página no client)
+  // =========================
+
+  const UPSSELL_PREFETCH = 60; // para ter volume e permitir páginas
+  const pendingUpsellRows = await prisma.upsellPurchase.findMany({
+    take: UPSSELL_PREFETCH,
+    orderBy: { createdAt: 'desc' },
     where: {
-      status: 'PAID',
-      paidAt: { gte: start7, lt: tomorrow },
-      ...(hostingIds.length ? { id: { notIn: hostingIds } } : {}),
+      kind: 'hosting',
+      status: 'PENDING',
     },
+    distinct: ['orderId'],
     include: {
-      lead: true,
-      price: { include: { product: true } },
+      order: {
+        include: {
+          lead: true,
+          price: { include: { product: true } },
+        },
+      },
     },
   });
+
+  const pending = pendingUpsellRows.map((u) => ({
+    orderId: u.orderId,
+    email: u.order.customerEmail ?? u.order.lead?.email ?? 'sem email',
+    product: u.order.price.product.name,
+    createdAt: u.createdAt.toISOString().slice(0, 10),
+    tag: 'PENDING' as const,
+  }));
+
+  const remaining = Math.max(0, UPSSELL_PREFETCH - pending.length);
+
+  const notContractedHostingOrders = remaining
+    ? await prisma.order.findMany({
+        take: remaining,
+        orderBy: { paidAt: 'desc' },
+        where: {
+          status: 'PAID',
+          paidAt: { gte: start7, lt: tomorrow },
+          upsells: {
+            none: { kind: 'hosting' },
+          },
+        },
+        include: {
+          lead: true,
+          price: { include: { product: true } },
+        },
+      })
+    : [];
+
+  const notContracted = notContractedHostingOrders.map((o) => ({
+    orderId: o.id,
+    email: o.customerEmail ?? o.lead?.email ?? 'sem email',
+    product: o.price.product.name,
+    createdAt: (o.paidAt ?? o.createdAt).toISOString().slice(0, 10),
+    tag: 'NOT_CONTRACTED' as const,
+  }));
+
+  const upsellsRaw = [...pending, ...notContracted];
+
+  // 🔗 conexão com a tela Operação: se estiver DONE lá, some/atualiza aqui
+  const upsellIds = upsellsRaw.map((u) => u.orderId);
+
+  const upsellWorkItems = upsellIds.length
+    ? await prisma.adminWorkItem.findMany({
+        where: { kind: 'UPSELL', refId: { in: upsellIds } },
+        select: { refId: true, status: true },
+      })
+    : [];
+
+  const upsellStatusById = new Map(
+    upsellWorkItems.map((w) => [w.refId, w.status]),
+  );
+
+  const upsells = upsellsRaw.filter(
+    (u) => (upsellStatusById.get(u.orderId) ?? 'TODO') !== 'DONE',
+  );
+
+  // =========================
 
   const revenue7Cents = revenue7._sum.amountTotal ?? 0;
   const conversion7 = leads7 > 0 ? Math.round((paidOrders7 / leads7) * 100) : 0;
 
-  // props serializáveis para o client component
   const ready = readyForProduction.map((o) => ({
     orderId: o.id,
     email: o.customerEmail ?? o.lead?.email ?? 'sem email',
@@ -198,40 +294,65 @@ export default async function AdminPage() {
     total: formatBRL(o.amountTotal),
   }));
 
-  const stalled = stalledBriefings.map((b) => {
-    const phone = b.order.lead?.phone ?? '';
-    const msg =
-      `Olá! Vi que seu briefing ainda não foi concluído.\n\n` +
-      `Pode finalizar quando possível? Se preferir, posso te ajudar por aqui.\n\n` +
+  const stalledNotStarted = notStartedOrders.map((o) => {
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.APP_URL ||
+      'http://localhost:3000';
+
+    const onboardingLink = `${appUrl}/onboarding?orderId=${o.id}`;
+    const to = (o.customerEmail ?? o.lead?.email ?? '').trim();
+
+    const subject = `Ação necessária: inicie seu briefing (pedido ${o.id})`;
+
+    const body =
+      `Olá! Tudo bem?\n\n` +
+      `Seu pedido foi confirmado, e precisamos que você inicie o briefing para começarmos a produção da sua plataforma.\n\n` +
+      `Para iniciar agora, acesse o link abaixo:\n` +
+      `${onboardingLink}\n\n` +
+      `Se tiver qualquer dúvida, é só responder este e-mail.\n\n` +
+      `Pedido: ${o.id}`;
+
+    return {
+      orderId: o.id,
+      email: to || 'sem email',
+      product: o.price.product.name,
+      updatedAt: `Não iniciou • Pago em: ${(o.paidAt ?? o.createdAt)
+        .toISOString()
+        .slice(0, 10)}`,
+      whatsappLink: buildEmailLink(to, subject, body),
+    };
+  });
+
+  const stalledDraft = stalledBriefings.map((b) => {
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.APP_URL ||
+      'http://localhost:3000';
+
+    const onboardingLink = `${appUrl}/onboarding?orderId=${b.orderId}`;
+    const to = (b.order.customerEmail ?? b.order.lead?.email ?? '').trim();
+
+    const subject = `Ação necessária: finalize seu briefing (pedido ${b.orderId})`;
+
+    const body =
+      `Olá! Tudo bem?\n\n` +
+      `Identificamos que o briefing do seu pedido ainda não foi finalizado. Ele é necessário para iniciarmos a produção da sua plataforma.\n\n` +
+      `Para concluir agora, acesse o link abaixo:\n` +
+      `${onboardingLink}\n\n` +
+      `Se tiver qualquer dúvida, é só responder este e-mail.\n\n` +
       `Pedido: ${b.orderId}`;
 
     return {
       orderId: b.orderId,
-      email: b.order.customerEmail ?? b.order.lead?.email ?? 'sem email',
+      email: to || 'sem email',
       product: b.order.price.product.name,
-      updatedAt: b.updatedAt.toISOString().slice(0, 10),
-      whatsappLink: buildWhatsAppLink(phone, msg),
+      updatedAt: `Parado desde: ${b.updatedAt.toISOString().slice(0, 10)}`,
+      whatsappLink: buildEmailLink(to, subject, body),
     };
   });
 
-  // Upsell com 2 categorias (badge forte)
-  const pending = pendingUpsells.map((u) => ({
-    orderId: u.orderId,
-    email: u.order.customerEmail ?? u.order.lead?.email ?? 'sem email',
-    product: u.order.price.product.name,
-    createdAt: u.createdAt.toISOString().slice(0, 10),
-    tag: 'PENDING' as const, // tentou e parou
-  }));
-
-  const notContracted = notContractedHostingOrders.map((o) => ({
-    orderId: o.id,
-    email: o.customerEmail ?? o.lead?.email ?? 'sem email',
-    product: o.price.product.name,
-    createdAt: (o.paidAt ?? o.createdAt).toISOString().slice(0, 10),
-    tag: 'NOT_CONTRACTED' as const, // nunca tentou
-  }));
-
-  const upsells = [...pending, ...notContracted];
+  const stalled = [...stalledNotStarted, ...stalledDraft];
 
   const leads = activeRecentLeads.map((l) => {
     const msg =
@@ -309,11 +430,9 @@ export default async function AdminPage() {
         <div className='flex items-start justify-between gap-3'>
           <div className='min-w-0'>
             <p className='text-sm text-muted-foreground'>{label}</p>
-
             <p className='mt-1 text-xl font-semibold leading-none sm:text-2xl'>
               {value}
             </p>
-
             {helper ? (
               <p className='mt-2 text-xs text-muted-foreground'>{helper}</p>
             ) : null}
@@ -334,7 +453,6 @@ export default async function AdminPage() {
 
   return (
     <div className='grid gap-6'>
-      {/* Header */}
       <div className='flex flex-col gap-2'>
         <div className='flex items-center justify-between gap-3'>
           <div>
@@ -357,7 +475,6 @@ export default async function AdminPage() {
 
       <Separator />
 
-      {/* KPIs */}
       <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
         <KpiCard
           label='Receita (7 dias)'
@@ -392,7 +509,6 @@ export default async function AdminPage() {
         />
       </div>
 
-      {/* Filas */}
       <WorkflowCarousel
         ready={ready}
         stalled={stalled}
@@ -400,7 +516,6 @@ export default async function AdminPage() {
         leads={leads}
       />
 
-      {/* Atalhos */}
       <Card className='p-4'>
         <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
           <div>

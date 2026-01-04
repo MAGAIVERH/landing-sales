@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -53,13 +52,6 @@ const normalizeLeadStatus = (raw: string) => {
   if (lower === 'perdido') return 'LOST';
 
   return '';
-};
-
-const getSourceLabel = (landingPath?: string | null) => {
-  if (!landingPath) return 'desconhecido';
-  if (landingPath === '/budget') return 'Orçamento';
-  if (landingPath === '/') return 'Hero';
-  return landingPath.replace('/', '') || landingPath;
 };
 
 export default async function AdminLeadsPage({
@@ -121,7 +113,6 @@ export default async function AdminLeadsPage({
             <tr>
               <th className='px-4 py-3 font-medium'>Contato</th>
               <th className='px-4 py-3 font-medium'>Mensagem</th>
-              <th className='px-4 py-3 font-medium'>Origem</th>
               <th className='px-4 py-3 font-medium'>Status</th>
               <th className='px-4 py-3 font-medium'>Data</th>
               <th className='px-4 py-3 font-medium text-right'>Ações</th>
@@ -132,7 +123,7 @@ export default async function AdminLeadsPage({
             {rows.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={5}
                   className='px-4 py-8 text-center text-sm text-muted-foreground'
                 >
                   Nenhum lead encontrado.
@@ -163,12 +154,6 @@ export default async function AdminLeadsPage({
 
                     <td className='px-4 py-3'>
                       <LeadMessagePreview message={msgPreview} />
-                    </td>
-
-                    <td className='px-4 py-3'>
-                      <Badge variant='secondary'>
-                        {getSourceLabel(lead.landingPath)}
-                      </Badge>
                     </td>
 
                     <td className='px-4 py-3'>
