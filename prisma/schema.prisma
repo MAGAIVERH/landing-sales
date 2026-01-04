@@ -158,9 +158,10 @@ model Order {
 
   upsells UpsellPurchase[]
 
+  upsellFollowup UpsellFollowup?
   // snapshot do total no momento da compra (centavos)
   amountSubtotal Int
-  amountDiscount Int @default(0)
+  amountDiscount Int             @default(0)
   amountTotal    Int
 
   status       OrderStatus   @default(PENDING)
@@ -314,7 +315,6 @@ model OrderAccessLink {
   @@index([expiresAt])
 }
 
-
 enum AdminWorkItemKind {
   READY
   STALLED
@@ -330,7 +330,7 @@ enum AdminWorkItemStatus {
 }
 
 model AdminWorkItem {
-  id          String             @id @default(cuid())
+  id          String              @id @default(cuid())
   kind        AdminWorkItemKind
   refId       String
   status      AdminWorkItemStatus @default(TODO)
@@ -338,9 +338,25 @@ model AdminWorkItem {
   snoozeUntil DateTime?
   doneAt      DateTime?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([kind, refId])
   @@index([kind, status])
+}
+
+model UpsellFollowup {
+  id         String    @id @default(cuid())
+  orderId    String    @unique
+  kind       String
+  attempts   Int       @default(0)
+  lastSentAt DateTime?
+  closeAt    DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([kind])
+  @@index([closeAt])
 }
