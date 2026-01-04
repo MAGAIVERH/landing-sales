@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { BackButton } from './back-button';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -82,6 +83,53 @@ const pick = (obj: Record<string, unknown>, keys: string[]) => {
     if (v !== null) return v;
   }
   return null;
+};
+
+const normalizeStatusKey = (value?: string | null) => {
+  if (!value) return '';
+  return value
+    .trim()
+    .toUpperCase()
+    .replace(/[-\s]+/g, '_');
+};
+
+const humanizeStatusFallback = (value?: string | null) => {
+  if (!value) return '-';
+  const key = normalizeStatusKey(value);
+  if (!key) return '-';
+
+  const text = key.replace(/_/g, ' ').toLowerCase();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
+
+const getOrderStatusLabel = (status?: string | null) => {
+  const key = normalizeStatusKey(status);
+
+  const map: Record<string, string> = {
+    PAID: 'Pago',
+    PENDING: 'Pendente',
+    UNPAID: 'Não pago',
+    CANCELED: 'Cancelado',
+    CANCELLED: 'Cancelado',
+    REFUNDED: 'Reembolsado',
+    PARTIALLY_REFUNDED: 'Reembolso parcial',
+  };
+
+  return map[key] ?? humanizeStatusFallback(status);
+};
+
+const getBriefingStatusLabel = (status?: string | null) => {
+  const key = normalizeStatusKey(status);
+
+  const map: Record<string, string> = {
+    SUBMITTED: 'Entregue',
+    OK: 'Entregue',
+    DRAFT: 'Rascunho',
+    IN_PROGRESS: 'Em andamento',
+    COMPLETED: 'Concluído',
+  };
+
+  return map[key] ?? humanizeStatusFallback(status);
 };
 
 const Row = ({ label, value }: { label: string; value: React.ReactNode }) => {
@@ -179,6 +227,9 @@ export default async function OrderDetailsPage({
 
   const briefing = order.briefing as any;
   const briefingStatus = briefing?.status ?? (briefing ? 'OK' : '-');
+
+  const orderStatusLabel = getOrderStatusLabel(order.status);
+  const briefingStatusLabel = getBriefingStatusLabel(briefingStatus);
 
   const payload = getBriefingPayload(briefing);
   const data = isPlainObject(payload)
@@ -290,7 +341,7 @@ export default async function OrderDetailsPage({
                   variant='secondary'
                   className='bg-primary/10 text-primary'
                 >
-                  Briefing: {String(briefingStatus)}
+                  Briefing: {briefingStatusLabel}
                 </Badge>
               ) : (
                 <Badge variant='secondary'>Sem briefing</Badge>
@@ -365,7 +416,7 @@ export default async function OrderDetailsPage({
                 <Row label='Telefone (lead)' value={customerPhone || '-'} />
                 <Row label='Produto' value={productName} />
                 <Row label='Total' value={total} />
-                <Row label='Status do pedido' value={order.status} />
+                <Row label='Status do pedido' value={orderStatusLabel} />
                 <Row label='Pago em' value={isoDate(order.paidAt)} />
               </div>
             </SectionCard>
@@ -424,7 +475,7 @@ export default async function OrderDetailsPage({
               bodyClassName={cardBodyScrollClass}
             >
               <div className='grid gap-2'>
-                <Row label='Status' value={String(briefingStatus)} />
+                <Row label='Status' value={briefingStatusLabel} />
                 <Row label='Criado em' value={isoDate(briefing?.createdAt)} />
                 <Row
                   label='Atualizado em'
@@ -695,13 +746,10 @@ export default async function OrderDetailsPage({
           </div>
 
           <div className='flex items-center gap-2'>
+            <BackButton className='h-9' fallbackHref='/admin/orders' />
+
             <Link href='/admin/orders'>
-              <Button variant='outline' className='h-9'>
-                Voltar para pedidos
-              </Button>
-            </Link>
-            <Link href='/admin'>
-              <Button className='h-9'>Dashboard</Button>
+              <Button className='h-9'>Ir para pedidos</Button>
             </Link>
           </div>
         </div>
