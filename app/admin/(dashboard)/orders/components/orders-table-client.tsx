@@ -467,9 +467,9 @@ export const OrdersTableClient = ({
               <col className='w-40' /> {/* Cliente */}
               <col className='w-40' /> {/* Plano */}
               <col className='w-20' /> {/* Status */}
-              <col className='w-30' /> {/* Total */}
-              <col className='w-35' /> {/* Onboarding */}
-              <col className='w-35' /> {/* Data */}
+              <col className='w-35' /> {/* Total */}
+              <col className='w-25' /> {/* Onboarding */}
+              <col className='w-25' /> {/* Data */}
               <col className='w-45' /> {/* Ações */}
             </colgroup>
 
@@ -478,7 +478,7 @@ export const OrdersTableClient = ({
                 <th className='px-4 py-3 text-left font-medium'>Cliente</th>
                 <th className='px-4 py-3 text-left font-medium'>Plano</th>
                 <th className='px-4 py-3 text-left font-medium'>Status</th>
-                <th className='px-4 py-3 text-right font-medium'>Total</th>
+                <th className='px-4 py-3 text-center font-medium'>Total</th>
                 <th className='px-4 py-3 text-left font-medium'>Onboarding</th>
                 <th className='px-4 py-3 text-left font-medium'>Data</th>
                 <th className='px-4 py-3 text-right font-medium lg:sticky lg:right-0 lg:bg-muted/40'>

@@ -323,6 +323,7 @@ const statusLabelPT = (status: string) => {
   if (s === 'PENDING') return 'Pendente';
   if (s === 'CANCELED') return 'Cancelado';
   if (s === 'REFUNDED') return 'Reembolsado';
+  if (s === 'PARTIALLY_REFUNDED') return 'Reembolso';
   if (s === 'FAILED') return 'Falhou';
   return status;
 };
@@ -551,6 +552,7 @@ export default async function AdminOrdersPage({
               <option value='PAID'>PAID</option>
               <option value='PENDING'>PENDING</option>
               <option value='CANCELED'>CANCELED</option>
+              <option value='PARTIALLY_REFUNDED'>PARTIALLY_REFUNDED</option>
               <option value='REFUNDED'>REFUNDED</option>
               <option value='FAILED'>FAILED</option>
             </select>
