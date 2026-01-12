@@ -8,7 +8,7 @@ export const config = {
   matcher: ['/admin/:path*', '/api/admin/:path*'],
 };
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
   const isLoginPage = pathname === '/admin/login';
