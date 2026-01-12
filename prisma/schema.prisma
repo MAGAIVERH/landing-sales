@@ -29,6 +29,7 @@ enum OrderStatus {
   PENDING
   PAID
   CANCELED
+  PARTIALLY_REFUNDED
   REFUNDED
   FAILED
 }
@@ -157,6 +158,10 @@ model Order {
   currency String @default("brl")
 
   upsells UpsellPurchase[]
+
+  refundedAmount Int       @default(0)
+  refundedAt     DateTime?
+  stripeRefundId String?   @unique
 
   upsellFollowup UpsellFollowup?
   // snapshot do total no momento da compra (centavos)
