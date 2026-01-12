@@ -7,6 +7,7 @@ type OrderStatus =
   | 'PENDING'
   | 'PAID'
   | 'CANCELED'
+  | 'PARTIALLY_REFUNDED'
   | 'REFUNDED'
   | 'FAILED'
   | 'ALL';
@@ -102,10 +103,28 @@ export const GET = async (req: Request) => {
         : prisma.order.findMany({
             where: orderWhere,
             orderBy: { createdAt: 'desc' },
-            include: {
-              price: { include: { product: true } },
-              user: true,
-              lead: true,
+            select: {
+              id: true,
+              status: true,
+              amountTotal: true,
+              refundedAmount: true,
+              paidAt: true,
+              createdAt: true,
+              customerEmail: true,
+
+              price: {
+                select: {
+                  product: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                },
+              },
+
+              user: { select: { email: true } },
+              lead: { select: { email: true } },
             },
             take: 5000,
           }),
@@ -196,8 +215,10 @@ export const GET = async (req: Request) => {
         volumePendingByDay.set(day, (volumePendingByDay.get(day) ?? 0) + 1);
       }
 
-      if (o.status === 'REFUNDED') {
-        refundedCents += amount;
+      if (o.status === 'REFUNDED' || o.status === 'PARTIALLY_REFUNDED') {
+        const refunded = o.refundedAmount ?? 0;
+        const refundedValue = refunded > 0 ? refunded : amount; // fallback
+        refundedCents += refundedValue;
         refundedCount += 1;
       }
 
@@ -235,6 +256,7 @@ export const GET = async (req: Request) => {
       if (up === 'PAID') return 'Pago';
       if (up === 'PENDING') return 'Pendente';
       if (up === 'REFUNDED') return 'Reembolsado';
+      if (up === 'PARTIALLY_REFUNDED') return 'Reembolso parcial';
       if (up === 'CANCELED') return 'Cancelado';
       if (up === 'FAILED') return 'Falhou';
       return up;
