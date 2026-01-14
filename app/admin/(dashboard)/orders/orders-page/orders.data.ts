@@ -16,6 +16,25 @@ import {
 
 const PAGE_SIZE = 20;
 
+type OrderUpsellRow = {
+  kind: string;
+  status: string;
+};
+
+type OrderRow = {
+  id: string;
+  status: string;
+  customerEmail: string | null;
+  amountTotal: number | null;
+  createdAt: Date;
+  paidAt: Date | null;
+
+  price: { product: { name: string } | null } | null;
+  lead: { email: string | null } | null;
+  briefing: { status: string; data?: unknown } | null;
+  upsells: OrderUpsellRow[];
+};
+
 export const getOrdersPageData = async (
   sp: OrdersSearchParamsRecord,
 ): Promise<OrdersPageData> => {
@@ -67,7 +86,7 @@ export const getOrdersPageData = async (
     }),
   ]);
 
-  const rows: OrderVM[] = orders.map((order) => {
+  const rows: OrderVM[] = (orders as OrderRow[]).map((order) => {
     const planName = order.price?.product?.name ?? '—';
     const totalLabel = formatBRL(order.amountTotal ?? 0);
 
@@ -78,7 +97,9 @@ export const getOrdersPageData = async (
         ? 'DRAFT'
         : 'NOT_STARTED';
 
-    const hosting = order.upsells.find((u) => u.kind === 'hosting');
+    const hosting = order.upsells.find(
+      (u: OrderUpsellRow) => u.kind === 'hosting',
+    );
     const hostingBadge =
       hosting?.status === 'PAID'
         ? 'Hospedagem: Paga'
