@@ -123,11 +123,14 @@ export const getDashboardHomeData = async (): Promise<DashboardHomeData> => {
     : [];
 
   const leadWorkStatusById = new Map(
-    leadWorkItems.map((w) => [w.refId, w.status]),
+    leadWorkItems.map((w: { refId: string; status: string }) => [
+      w.refId,
+      w.status,
+    ]),
   );
 
   const activeRecentLeads = recentLeads.filter(
-    (l) => (leadWorkStatusById.get(l.id) ?? 'TODO') !== 'DONE',
+    (l: { id: string }) => (leadWorkStatusById.get(l.id) ?? 'TODO') !== 'DONE',
   );
 
   const readyIdsRaw = readyForProductionRaw.map((o) => o.id);
@@ -143,7 +146,9 @@ export const getDashboardHomeData = async (): Promise<DashboardHomeData> => {
       })
     : [];
 
-  const readyDoneSet = new Set(readyDoneRows.map((w) => w.refId));
+  const readyDoneSet = new Set(
+    readyDoneRows.map((w: { refId: string }) => w.refId),
+  );
 
   const readyForProduction = readyForProductionRaw
     .filter((o) => !readyDoneSet.has(o.id))
@@ -215,7 +220,10 @@ export const getDashboardHomeData = async (): Promise<DashboardHomeData> => {
     : [];
 
   const upsellStatusById = new Map(
-    upsellWorkItems.map((w) => [w.refId, w.status]),
+    upsellWorkItems.map((w: { refId: string; status: string }) => [
+      w.refId,
+      w.status,
+    ]),
   );
 
   const upsells = upsellsRaw.filter(
