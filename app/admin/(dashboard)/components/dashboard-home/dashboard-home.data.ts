@@ -229,7 +229,7 @@ export const getDashboardHomeData = async (): Promise<DashboardHomeData> => {
 
   const upsellsRaw = [...pending, ...notContracted];
 
-  const upsellIds = upsellsRaw.map((u) => u.orderId);
+  const upsellIds = upsellsRaw.map((u: { orderId: string }) => u.orderId);
 
   const upsellWorkItems = upsellIds.length
     ? await prisma.adminWorkItem.findMany({
@@ -268,83 +268,111 @@ export const getDashboardHomeData = async (): Promise<DashboardHomeData> => {
     }),
   );
 
-  const stalledNotStarted = notStartedOrders.map((o) => {
-    const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      process.env.APP_URL ||
-      'http://localhost:3000';
+  const stalledNotStarted = notStartedOrders.map(
+    (o: {
+      id: string;
+      customerEmail: string | null;
+      createdAt: Date;
+      paidAt: Date | null;
+      lead: { email: string | null } | null;
+      price: { product: { name: string } };
+    }) => {
+      const appUrl =
+        process.env.NEXT_PUBLIC_APP_URL ||
+        process.env.APP_URL ||
+        'http://localhost:3000';
 
-    const onboardingLink = `${appUrl}/onboarding?orderId=${o.id}`;
-    const to = (o.customerEmail ?? o.lead?.email ?? '').trim();
+      const onboardingLink = `${appUrl}/onboarding?orderId=${o.id}`;
+      const to = (o.customerEmail ?? o.lead?.email ?? '').trim();
 
-    const subject = `Ação necessária: inicie seu briefing (pedido ${o.id})`;
+      const subject = `Ação necessária: inicie seu briefing (pedido ${o.id})`;
 
-    const body =
-      `Olá! Tudo bem?\n\n` +
-      `Seu pedido foi confirmado, e precisamos que você inicie o briefing para começarmos a produção da sua plataforma.\n\n` +
-      `Para iniciar agora, acesse o link abaixo:\n` +
-      `${onboardingLink}\n\n` +
-      `Se tiver qualquer dúvida, é só responder este e-mail.\n\n` +
-      `Pedido: ${o.id}`;
+      const body =
+        `Olá! Tudo bem?\n\n` +
+        `Seu pedido foi confirmado, e precisamos que você inicie o briefing para começarmos a produção da sua plataforma.\n\n` +
+        `Para iniciar agora, acesse o link abaixo:\n` +
+        `${onboardingLink}\n\n` +
+        `Se tiver qualquer dúvida, é só responder este e-mail.\n\n` +
+        `Pedido: ${o.id}`;
 
-    return {
-      orderId: o.id,
-      email: to || 'sem email',
-      product: o.price.product.name,
-      updatedAt: `Não iniciou • Pago em: ${(o.paidAt ?? o.createdAt)
-        .toISOString()
-        .slice(0, 10)}`,
-      whatsappLink: buildEmailLink(to, subject, body),
-    };
-  });
+      return {
+        orderId: o.id,
+        email: to || 'sem email',
+        product: o.price.product.name,
+        updatedAt: `Não iniciou • Pago em: ${(o.paidAt ?? o.createdAt)
+          .toISOString()
+          .slice(0, 10)}`,
+        whatsappLink: buildEmailLink(to, subject, body),
+      };
+    },
+  );
 
-  const stalledDraft = stalledBriefings.map((b) => {
-    const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      process.env.APP_URL ||
-      'http://localhost:3000';
+  const stalledDraft = stalledBriefings.map(
+    (b: {
+      orderId: string;
+      updatedAt: Date;
+      order: {
+        customerEmail: string | null;
+        lead: { email: string | null } | null;
+        price: { product: { name: string } };
+      };
+    }) => {
+      const appUrl =
+        process.env.NEXT_PUBLIC_APP_URL ||
+        process.env.APP_URL ||
+        'http://localhost:3000';
 
-    const onboardingLink = `${appUrl}/onboarding?orderId=${b.orderId}`;
-    const to = (b.order.customerEmail ?? b.order.lead?.email ?? '').trim();
+      const onboardingLink = `${appUrl}/onboarding?orderId=${b.orderId}`;
+      const to = (b.order.customerEmail ?? b.order.lead?.email ?? '').trim();
 
-    const subject = `Ação necessária: finalize seu briefing (pedido ${b.orderId})`;
+      const subject = `Ação necessária: finalize seu briefing (pedido ${b.orderId})`;
 
-    const body =
-      `Olá! Tudo bem?\n\n` +
-      `Identificamos que o briefing do seu pedido ainda não foi finalizado. Ele é necessário para iniciarmos a produção da sua plataforma.\n\n` +
-      `Para concluir agora, acesse o link abaixo:\n` +
-      `${onboardingLink}\n\n` +
-      `Se tiver qualquer dúvida, é só responder este e-mail.\n\n` +
-      `Pedido: ${b.orderId}`;
+      const body =
+        `Olá! Tudo bem?\n\n` +
+        `Identificamos que o briefing do seu pedido ainda não foi finalizado. Ele é necessário para iniciarmos a produção da sua plataforma.\n\n` +
+        `Para concluir agora, acesse o link abaixo:\n` +
+        `${onboardingLink}\n\n` +
+        `Se tiver qualquer dúvida, é só responder este e-mail.\n\n` +
+        `Pedido: ${b.orderId}`;
 
-    return {
-      orderId: b.orderId,
-      email: to || 'sem email',
-      product: b.order.price.product.name,
-      updatedAt: `Parado desde: ${b.updatedAt.toISOString().slice(0, 10)}`,
-      whatsappLink: buildEmailLink(to, subject, body),
-    };
-  });
+      return {
+        orderId: b.orderId,
+        email: to || 'sem email',
+        product: b.order.price.product.name,
+        updatedAt: `Parado desde: ${b.updatedAt.toISOString().slice(0, 10)}`,
+        whatsappLink: buildEmailLink(to, subject, body),
+      };
+    },
+  );
 
   const stalled = [...stalledNotStarted, ...stalledDraft];
 
-  const leads = activeRecentLeads.map((l) => {
-    const msg =
-      `Olá! Vi sua solicitação e vou te enviar os próximos passos.\n\n` +
-      `Nome: ${l.name ?? '-'}\n` +
-      `E-mail: ${l.email ?? '-'}\n` +
-      `WhatsApp: ${l.phone ?? '-'}\n\n` +
-      `Pode me confirmar o segmento e o principal objetivo da sua plataforma?`;
+  const leads = activeRecentLeads.map(
+    (l: {
+      id: string;
+      name: string | null;
+      email: string | null;
+      phone: string | null;
+      message: string | null;
+      landingPath: string | null;
+    }) => {
+      const msg =
+        `Olá! Vi sua solicitação e vou te enviar os próximos passos.\n\n` +
+        `Nome: ${l.name ?? '-'}\n` +
+        `E-mail: ${l.email ?? '-'}\n` +
+        `WhatsApp: ${l.phone ?? '-'}\n\n` +
+        `Pode me confirmar o segmento e o principal objetivo da sua plataforma?`;
 
-    return {
-      id: l.id,
-      name: l.name ?? 'Sem nome',
-      email: l.email ?? 'sem e-mail',
-      message: l.message ?? '',
-      landingPath: l.landingPath ?? '-',
-      whatsappLink: buildWhatsAppLink(l.phone ?? '', msg),
-    };
-  });
+      return {
+        id: l.id,
+        name: l.name ?? 'Sem nome',
+        email: l.email ?? 'sem e-mail',
+        message: l.message ?? '',
+        landingPath: l.landingPath ?? '-',
+        whatsappLink: buildWhatsAppLink(l.phone ?? '', msg),
+      };
+    },
+  );
 
   return {
     kpis: {
