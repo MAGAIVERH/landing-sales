@@ -172,13 +172,23 @@ export const getDashboardHomeData = async (): Promise<DashboardHomeData> => {
     },
   });
 
-  const pending = pendingUpsellRows.map((u) => ({
-    orderId: u.orderId,
-    email: u.order.customerEmail ?? u.order.lead?.email ?? 'sem email',
-    product: u.order.price.product.name,
-    createdAt: u.createdAt.toISOString().slice(0, 10),
-    tag: 'PENDING' as const,
-  }));
+  const pending = pendingUpsellRows.map(
+    (u: {
+      orderId: string;
+      createdAt: Date;
+      order: {
+        customerEmail: string | null;
+        lead: { email: string | null } | null;
+        price: { product: { name: string } };
+      };
+    }) => ({
+      orderId: u.orderId,
+      email: u.order.customerEmail ?? u.order.lead?.email ?? 'sem email',
+      product: u.order.price.product.name,
+      createdAt: u.createdAt.toISOString().slice(0, 10),
+      tag: 'PENDING' as const,
+    }),
+  );
 
   const remaining = Math.max(0, UPSSELL_PREFETCH - pending.length);
 
