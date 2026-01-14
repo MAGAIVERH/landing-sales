@@ -1,13 +1,14 @@
 'use client';
 
 import { Check } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Section } from '../section';
-import { Badge } from '@/components/ui/badge';
 
-import { HeroLeadForm } from './hero-lead-form';
 import { HowItWorksDialog } from '../how-it-works-dialog';
+import { Section } from '../section';
+import { HeroLeadForm } from './hero-lead-form';
 import { SegmentsDialog } from './SegmentsDialog';
 
 export const Hero = () => {

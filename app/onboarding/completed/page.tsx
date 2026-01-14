@@ -1,9 +1,10 @@
-import Link from 'next/link';
 import { CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
 
-import { prisma } from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { prisma } from '@/lib/prisma';
+
 import { HostingUpsellCard } from './hostingUpsellCard';
 
 type PageProps = {

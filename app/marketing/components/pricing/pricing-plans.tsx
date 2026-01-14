@@ -1,7 +1,7 @@
 'use client';
 
-import { PricingPlanCard } from './pricing-plan-card';
 import type { Plan } from './pricing.types';
+import { PricingPlanCard } from './pricing-plan-card';
 
 export const PricingPlans = ({ plans }: { plans: Plan[] }) => {
   return (

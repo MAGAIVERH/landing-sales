@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+
 import type { Segment } from './social-proof.types';
 
 export const SocialProofPreview = ({

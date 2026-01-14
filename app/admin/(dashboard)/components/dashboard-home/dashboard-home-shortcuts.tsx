@@ -1,6 +1,6 @@
-import * as React from 'react';
-import Link from 'next/link';
 import { MessageCircle } from 'lucide-react';
+import Link from 'next/link';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';

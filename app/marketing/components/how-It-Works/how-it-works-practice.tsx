@@ -1,12 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { Check } from 'lucide-react';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 
-import { HowItWorksPreview } from './how-it-works-preview';
 import { HowItWorksSolutionsDialog } from '../how-it-works-solutions-dialog';
+import { HowItWorksPreview } from './how-it-works-preview';
 
 export const HowItWorksPractice = ({ bullets }: { bullets: string[] }) => {
   return (

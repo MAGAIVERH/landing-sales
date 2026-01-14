@@ -1,9 +1,8 @@
 import { CheckCircle2, Clock, TrendingUp, Users } from 'lucide-react';
 
 import type { DashboardHomeKpis as Kpis } from './dashboard-home.types';
-
-import { DashboardHomeKpiCard } from './dashboard-home-kpi-card';
 import { formatBRL } from './dashboard-home.utils';
+import { DashboardHomeKpiCard } from './dashboard-home-kpi-card';
 
 type Props = {
   kpis: Kpis;

@@ -1,8 +1,9 @@
 'use client';
 
 import { CalendarCheck2, Check, CreditCard, Gauge } from 'lucide-react';
-import type { Segment } from './social-proof.types';
+
 import { HowItWorksDialog } from '../how-it-works-dialog';
+import type { Segment } from './social-proof.types';
 
 export const SocialProofBenefits = ({
   activeSegment,

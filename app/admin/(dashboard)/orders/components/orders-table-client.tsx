@@ -1,7 +1,7 @@
 'use client';
 
-import * as React from 'react';
 import Link from 'next/link';
+import * as React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,8 +14,8 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-import { OrderRowActions } from './order-row-actions';
 import { OrderDetailsSheet } from './order-details-sheet';
+import { OrderRowActions } from './order-row-actions';
 
 type Row = {
   id: string;

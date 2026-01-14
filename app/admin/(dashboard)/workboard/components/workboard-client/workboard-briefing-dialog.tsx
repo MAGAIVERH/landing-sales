@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-import type { ReadyItem } from './workboard-client.types';
 import type { BriefingView } from './workboard-client.briefing';
 import { formatValue } from './workboard-client.briefing';
+import type { ReadyItem } from './workboard-client.types';
 
 type Props = {
   open: boolean;

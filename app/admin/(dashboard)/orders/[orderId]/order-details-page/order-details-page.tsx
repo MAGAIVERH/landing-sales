@@ -1,5 +1,3 @@
-import * as React from 'react';
-import Link from 'next/link';
 import {
   ArrowLeft,
   ArrowRight,
@@ -7,15 +5,17 @@ import {
   ClipboardList,
   CreditCard,
   FileText,
-  Pencil,
-  User,
   Globe,
-  Phone,
-  Instagram,
   Image as ImageIcon,
+  Instagram,
   Palette,
+  Pencil,
+  Phone,
   StickyNote,
+  User,
 } from 'lucide-react';
+import Link from 'next/link';
+import * as React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,15 +24,14 @@ import { Separator } from '@/components/ui/separator';
 
 import { BackButton } from '../back-button';
 import { RefundAction } from '../refund-action';
-
 import type { OrderDetailsPageProps } from './order-details.types';
 import {
   formatBRL,
   getBriefingPayload,
   getBriefingStatusLabel,
   getOrderStatusLabel,
-  isPlainObject,
   isoDate,
+  isPlainObject,
   normalizeStatusKey,
   normalizeUrl,
   pick,

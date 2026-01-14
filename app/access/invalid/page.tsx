@@ -1,8 +1,8 @@
+import { Headset, Home } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Headset, Home } from 'lucide-react';
 
 type PageProps = {
   searchParams: Promise<{ reason?: string }>;

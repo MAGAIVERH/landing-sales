@@ -1,6 +1,5 @@
-import type { WorkboardData } from './workboard.types';
-
 import { WorkboardClient } from '../workboard-client';
+import type { WorkboardData } from './workboard.types';
 import { WorkboardHeader } from './workboard-header';
 
 type Props = {

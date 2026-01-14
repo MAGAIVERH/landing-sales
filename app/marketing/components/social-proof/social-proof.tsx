@@ -1,17 +1,17 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Section } from '../section';
 
+import { Section } from '../section';
 import {
   PLATFORM_PREVIEW_SRC,
   segments,
   testimonials,
 } from './social-proof.data';
-import { SocialProofHeader } from './social-proof-header';
 import { SocialProofBenefits } from './social-proof-benefits';
-import { SocialProofSegments } from './social-proof-segments';
+import { SocialProofHeader } from './social-proof-header';
 import { SocialProofPreview } from './social-proof-preview';
+import { SocialProofSegments } from './social-proof-segments';
 import { SocialProofTestimonials } from './social-proof-testimonials';
 
 export const SocialProof = () => {

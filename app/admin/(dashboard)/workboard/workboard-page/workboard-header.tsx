@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import {
   ArrowRight,
   CheckCircle2,
@@ -6,11 +5,12 @@ import {
   CreditCard,
   Sparkles,
 } from 'lucide-react';
+import Link from 'next/link';
 
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 export const WorkboardHeader = () => {
   return (

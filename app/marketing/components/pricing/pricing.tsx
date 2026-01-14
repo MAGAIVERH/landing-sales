@@ -1,13 +1,13 @@
 'use client';
 
-import { Section } from '../section';
-
-import { PLANS_MARKETING } from './pricing.data';
-import { PricingHeader } from './pricing-header';
-import { PricingPlans } from './pricing-plans';
-import { PricingNote } from './pricing-note';
-import type { Plan, PricingApiResponse } from './pricing.types';
 import React from 'react';
+
+import { Section } from '../section';
+import { PLANS_MARKETING } from './pricing.data';
+import type { Plan, PricingApiResponse } from './pricing.types';
+import { PricingHeader } from './pricing-header';
+import { PricingNote } from './pricing-note';
+import { PricingPlans } from './pricing-plans';
 
 export const Pricing = () => {
   const [plans, setPlans] = React.useState<Plan[]>([]);

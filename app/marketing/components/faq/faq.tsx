@@ -1,11 +1,10 @@
 'use client';
 
 import { Section } from '../section';
-
 import { FAQ_ITEMS } from './faq.data';
-import { FaqHeader } from './faq-header';
 import { FaqAccordion } from './faq-accordion';
 import { FaqCta } from './faq-cta';
+import { FaqHeader } from './faq-header';
 
 export const FAQ = () => {
   return (

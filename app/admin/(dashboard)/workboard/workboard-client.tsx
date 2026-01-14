@@ -1182,9 +1182,16 @@
 
 'use client';
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
 import { CheckCircle2, Clock, CreditCard, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
+
+import { WorkboardLeadsSection } from './components/workboard-client/session/workboard-leads-section';
+import { WorkboardReadySection } from './components/workboard-client/session/workboard-ready-section';
+import { WorkboardStalledSection } from './components/workboard-client/session/workboard-stalled-section';
+import { WorkboardUpsellsSection } from './components/workboard-client/session/workboard-upsells-section';
+import { WorkboardBriefingDialog } from './components/workboard-client/workboard-briefing-dialog';
+import { buildBriefingView } from './components/workboard-client/workboard-client.briefing';
 import {
   Props,
   ReadyItem,
@@ -1192,13 +1199,7 @@ import {
   TabKey,
   TabMeta,
 } from './components/workboard-client/workboard-client.types';
-import { buildBriefingView } from './components/workboard-client/workboard-client.briefing';
-import { WorkboardBriefingDialog } from './components/workboard-client/workboard-briefing-dialog';
 import { WorkboardTabsCard } from './components/workboard-client/workboard-tabs-card';
-import { WorkboardReadySection } from './components/workboard-client/session/workboard-ready-section';
-import { WorkboardStalledSection } from './components/workboard-client/session/workboard-stalled-section';
-import { WorkboardLeadsSection } from './components/workboard-client/session/workboard-leads-section';
-import { WorkboardUpsellsSection } from './components/workboard-client/session/workboard-upsells-section';
 
 export const WorkboardClient = ({ ready, stalled, upsells, leads }: Props) => {
   const router = useRouter();

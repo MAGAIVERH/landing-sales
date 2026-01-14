@@ -775,9 +775,6 @@
 
 'use client';
 
-import * as React from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import {
   ArrowRight,
   CheckCircle2,
@@ -788,6 +785,9 @@ import {
   MessageCircle,
   Sparkles,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import * as React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -800,7 +800,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-
 import { isTabKey } from '@/lib/admin-workflow';
 
 import type {
@@ -808,23 +807,21 @@ import type {
   TabKey,
   UpsellItem,
 } from './workflow-carousel/workflow-carousel.types';
-
+import { ListShell, Pill, Row } from './workflow-carousel/workflow-carousel.ui';
 import {
-  MAX_COLLAPSED,
-  MAX_VISIBLE_DEFAULT,
-  PAGE_SIZE_UPSELL,
-  STEP_DEFAULT,
   canPaginateDefault,
   canShowLessDefault,
   canShowMoreDefault,
+  MAX_COLLAPSED,
+  MAX_VISIBLE_DEFAULT,
+  PAGE_SIZE_UPSELL,
   sliceForDefaultTab,
   sliceForUpsell,
+  STEP_DEFAULT,
   totalPagesDefault,
   totalPagesUpsell,
   upsellBadge,
 } from './workflow-carousel/workflow-carousel.utils';
-
-import { ListShell, Pill, Row } from './workflow-carousel/workflow-carousel.ui';
 
 export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
   const [tab, setTab] = React.useState<TabKey>('ready');

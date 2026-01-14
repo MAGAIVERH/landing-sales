@@ -1,20 +1,20 @@
 import { CheckCircle2, MessageCircle } from 'lucide-react';
 
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
+import {
+  leadStatusBadgeClass,
+  leadStatusLabel,
+} from '../workboard-client.styles';
 import type {
   LeadItem,
   Split,
   UpdateStatusFn,
 } from '../workboard-client.types';
 import { Row } from '../workboard-client.ui';
-import {
-  leadStatusBadgeClass,
-  leadStatusLabel,
-} from '../workboard-client.styles';
 
 type Props = {
   split: Split<LeadItem>;

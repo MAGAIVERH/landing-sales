@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
 
+import { sendAccessLinkEmail } from '@/lib/email';
+import { createOrRotateOrderAccessLink } from '@/lib/magic-link';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
-import { createOrRotateOrderAccessLink } from '@/lib/magic-link';
-import { sendAccessLinkEmail } from '@/lib/email';
 
 export const runtime = 'nodejs';
 

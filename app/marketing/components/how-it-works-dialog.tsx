@@ -1,20 +1,19 @@
 'use client';
 
-import * as React from 'react';
-import Link from 'next/link';
 import {
   BadgeCheck,
+  ChevronRight,
   ClipboardList,
   Rocket,
   Sparkles,
-  ChevronRight,
   Timer,
 } from 'lucide-react';
+import Link from 'next/link';
+import * as React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 
 import type { ShowcaseSlide } from './showcase/showcase.types';
 import { ShowcasePhoneCarousel } from './showcase/showcase-phone-carousel';

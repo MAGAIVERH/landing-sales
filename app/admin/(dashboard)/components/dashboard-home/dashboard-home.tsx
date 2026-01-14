@@ -1,10 +1,10 @@
 import { Separator } from '@/components/ui/separator';
-import { WorkflowCarousel } from '../workflow-carousel';
 
-import { DashboardHomeShortcuts } from './dashboard-home-shortcuts';
-import { DashboardHomeKpis } from './dashboard-home-kpis';
-import { DashboardHomeHeader } from './dashboard-home-header';
+import { WorkflowCarousel } from '../workflow-carousel';
 import { DashboardHomeData } from './dashboard-home.types';
+import { DashboardHomeHeader } from './dashboard-home-header';
+import { DashboardHomeKpis } from './dashboard-home-kpis';
+import { DashboardHomeShortcuts } from './dashboard-home-shortcuts';
 
 type Props = {
   data: DashboardHomeData;

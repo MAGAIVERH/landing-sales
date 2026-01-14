@@ -1,10 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { ArrowRight, Check } from 'lucide-react';
+import Link from 'next/link';
 
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+
 import { HowItWorksSolutionsDialog } from '../how-it-works-solutions-dialog';
 
 export const ShowcaseCopy = ({ bullets }: { bullets: string[] }) => {

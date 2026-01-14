@@ -1,6 +1,7 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
+
 import type { Step } from './how-it-works.types';
 
 export const HowItWorksSteps = ({ steps }: { steps: Step[] }) => {

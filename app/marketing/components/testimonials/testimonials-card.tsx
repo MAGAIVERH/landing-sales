@@ -1,11 +1,11 @@
 'use client';
 
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import * as React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
 import type { TestimonialItem } from './testimonials.types';

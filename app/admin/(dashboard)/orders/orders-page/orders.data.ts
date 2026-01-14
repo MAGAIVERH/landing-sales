@@ -3,9 +3,9 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
 import type {
-  OrderVM,
   OrdersPageData,
   OrdersSearchParamsRecord,
+  OrderVM,
 } from './orders.types';
 import {
   extractOnboardingPhone,

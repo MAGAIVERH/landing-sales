@@ -1,14 +1,14 @@
 'use client';
 
+import {
+  Banknote,
+  CreditCard,
+  LayoutDashboard,
+  ListChecks,
+  Users,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard,
-  Users,
-  CreditCard,
-  ListChecks,
-  Banknote,
-} from 'lucide-react';
 
 const isActiveHref = (pathname: string, href: string) => {
   // /admin deve ficar ativo só quando estiver exatamente em /admin

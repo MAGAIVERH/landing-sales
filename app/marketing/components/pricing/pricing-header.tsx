@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Sparkles, ShieldCheck, Zap } from 'lucide-react';
+import { Check, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 

@@ -1,12 +1,12 @@
 'use client';
 
+import { ArrowRight, Check } from 'lucide-react';
 import Link from 'next/link';
 
-import { ArrowRight, Check } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
-import { Section } from '../section';
+
 import { HowItWorksSolutionsDialog } from '../how-it-works-solutions-dialog';
+import { Section } from '../section';
 
 export const CtaBand = () => {
   return (

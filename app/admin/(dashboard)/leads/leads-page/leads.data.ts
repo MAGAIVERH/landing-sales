@@ -2,8 +2,8 @@ import { prisma } from '@/lib/prisma';
 
 import type {
   AdminSearchParamsRecord,
-  LeadsPageData,
   LeadRow,
+  LeadsPageData,
 } from './leads.types';
 import { normalizeLeadStatus, pick } from './leads.utils';
 

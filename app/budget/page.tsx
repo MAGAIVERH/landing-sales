@@ -1,3 +1,4 @@
+import { Home } from 'lucide-react';
 import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +7,6 @@ import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
 import { BudgetLeadForm } from './budget-lead-form';
-import { Home } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 

@@ -1,17 +1,17 @@
 import { ArrowRight } from 'lucide-react';
 
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
+import { statusBadgeClass, statusLabel } from '../workboard-client.styles';
 import type {
   ReadyItem,
   Split,
   UpdateStatusFn,
 } from '../workboard-client.types';
 import { Row } from '../workboard-client.ui';
-import { statusBadgeClass, statusLabel } from '../workboard-client.styles';
 
 type Props = {
   split: Split<ReadyItem>;

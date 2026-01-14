@@ -3,11 +3,11 @@
 import { Sparkles } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
-import { Section } from '../section';
 
-import { USE_CASES } from './solutions-tabs.data';
-import { MobileSolutions } from './mobile-solutions';
+import { Section } from '../section';
 import { DesktopSolutions } from './desktop-solutions';
+import { MobileSolutions } from './mobile-solutions';
+import { USE_CASES } from './solutions-tabs.data';
 
 export const SolutionsTabs = () => {
   const first = USE_CASES[0]?.id ?? 'agenda';

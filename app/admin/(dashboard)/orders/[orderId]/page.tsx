@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 
 import { getOrderDetailsData } from './order-details-page/order-details.data';
-import { OrderDetailsPage } from './order-details-page/order-details-page';
 import type { OrderDetailsParams } from './order-details-page/order-details.types';
+import { OrderDetailsPage } from './order-details-page/order-details-page';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

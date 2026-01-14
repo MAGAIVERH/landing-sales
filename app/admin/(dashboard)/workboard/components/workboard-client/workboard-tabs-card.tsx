@@ -1,5 +1,5 @@
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
 import type { TabKey, TabMeta } from './workboard-client.types';

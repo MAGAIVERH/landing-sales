@@ -1,8 +1,8 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
 import { CheckCircle2, Copy, MessageCircle, RotateCcw } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 
@@ -23,7 +23,7 @@ type LeadRowActionsProps = {
 const onlyDigits = (value?: string | null) => (value ?? '').replace(/\D/g, '');
 
 const normalizeWhatsAppNumber = (value?: string | null) => {
-  let digits = onlyDigits(value);
+  const digits = onlyDigits(value);
   if (!digits) return null;
 
   // Se já veio com DDI do Brasil

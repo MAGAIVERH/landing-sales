@@ -1,7 +1,7 @@
 import { Separator } from '@/components/ui/separator';
 
-import { getDefaultRangeUTC } from './finance.utils';
 import { FinanceDashboardClient } from '../components/finance-dashboard-client';
+import { getDefaultRangeUTC } from './finance.utils';
 
 export const FinancePage = () => {
   const { defaultFrom, defaultTo } = getDefaultRangeUTC();

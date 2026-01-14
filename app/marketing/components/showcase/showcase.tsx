@@ -1,7 +1,6 @@
 'use client';
 
 import { Section } from '../section';
-
 import { BULLETS, SEGMENTS } from './showcase.data';
 import { ShowcaseCopy } from './showcase-copy';
 import { ShowcasePreview } from './showcase-preview';

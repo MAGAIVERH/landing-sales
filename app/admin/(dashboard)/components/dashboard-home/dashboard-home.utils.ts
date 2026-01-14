@@ -18,7 +18,7 @@ export const onlyDigits = (value?: string | null) =>
   (value ?? '').replace(/\D/g, '');
 
 export const normalizeWhatsAppNumber = (value?: string | null) => {
-  let digits = onlyDigits(value);
+  const digits = onlyDigits(value);
   if (!digits) return null;
 
   if (digits.startsWith('55')) return digits;

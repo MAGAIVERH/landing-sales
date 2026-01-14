@@ -8,7 +8,6 @@ import { Separator } from '@/components/ui/separator';
 import { LeadMessagePreview } from '../components/lead-message-preview';
 import { LeadRowActions } from '../components/lead-row-actions';
 import { LeadStatusSelect } from '../components/lead-status-select';
-
 import type { LeadRow, LeadsPageData } from './leads.types';
 import { formatDateTime } from './leads.utils';
 

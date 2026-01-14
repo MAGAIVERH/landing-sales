@@ -1,11 +1,10 @@
 'use client';
 
 import { Section } from '../section';
-
-import { STEPS, BULLETS } from './how-it-works.data';
+import { BULLETS,STEPS } from './how-it-works.data';
 import { HowItWorksHeader } from './how-it-works-header';
-import { HowItWorksSteps } from './how-it-works-steps';
 import { HowItWorksPractice } from './how-it-works-practice';
+import { HowItWorksSteps } from './how-it-works-steps';
 
 export const HowItWorks = () => {
   return (

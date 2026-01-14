@@ -1,14 +1,14 @@
-import Link from 'next/link';
 import { CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
 
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
+import { statusBadgeClass, statusLabel } from '../workboard-client.styles';
 import type { Split, UpsellItem } from '../workboard-client.types';
 import { Row } from '../workboard-client.ui';
-import { statusBadgeClass, statusLabel } from '../workboard-client.styles';
 
 type Props = {
   split: Split<UpsellItem>;

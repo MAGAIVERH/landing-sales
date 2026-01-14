@@ -2,8 +2,8 @@
 
 import { Section } from '../section';
 import { TESTIMONIAL_ITEMS } from './testimonials.data';
-import { TestimonialsCopy } from './testimonials-copy';
 import { TestimonialsCard } from './testimonials-card';
+import { TestimonialsCopy } from './testimonials-copy';
 
 export const Testimonials = () => {
   return (

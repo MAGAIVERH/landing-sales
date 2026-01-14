@@ -1,5 +1,5 @@
-import * as React from 'react';
 import type { ElementType } from 'react';
+import * as React from 'react';
 
 import { Card } from '@/components/ui/card';
 

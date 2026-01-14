@@ -18,10 +18,11 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
+import { mergeTransactions } from './finance-dashboard/finance-dashboard.transactions';
 import type {
+  DisplayTransaction,
   FinanceResponse,
   Props,
-  DisplayTransaction,
 } from './finance-dashboard/finance-dashboard.types';
 import {
   compactBRL,
@@ -29,7 +30,6 @@ import {
   formatDateTimeBR,
   shortDate,
 } from './finance-dashboard/finance-dashboard.utils';
-import { mergeTransactions } from './finance-dashboard/finance-dashboard.transactions';
 
 const CHART_PRIMARY = 'var(--primary)';
 
