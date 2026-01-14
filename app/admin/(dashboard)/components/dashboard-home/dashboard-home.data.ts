@@ -253,12 +253,20 @@ export const getDashboardHomeData = async (): Promise<DashboardHomeData> => {
   const revenue7Cents = revenue7._sum.amountTotal ?? 0;
   const conversion7 = leads7 > 0 ? Math.round((paidOrders7 / leads7) * 100) : 0;
 
-  const ready = readyForProduction.map((o) => ({
-    orderId: o.id,
-    email: o.customerEmail ?? o.lead?.email ?? 'sem email',
-    product: o.price.product.name,
-    total: formatBRL(o.amountTotal),
-  }));
+  const ready = readyForProduction.map(
+    (o: {
+      id: string;
+      customerEmail: string | null;
+      amountTotal: number;
+      lead: { email: string | null } | null;
+      price: { product: { name: string } };
+    }) => ({
+      orderId: o.id,
+      email: o.customerEmail ?? o.lead?.email ?? 'sem email',
+      product: o.price.product.name,
+      total: formatBRL(o.amountTotal),
+    }),
+  );
 
   const stalledNotStarted = notStartedOrders.map((o) => {
     const appUrl =
