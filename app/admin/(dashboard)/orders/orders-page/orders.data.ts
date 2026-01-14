@@ -1,5 +1,3 @@
-import type { Prisma } from '@prisma/client';
-
 import { prisma } from '@/lib/prisma';
 
 import type {
@@ -18,15 +16,6 @@ import {
 
 const PAGE_SIZE = 20;
 
-type OrderWithIncludes = Prisma.OrderGetPayload<{
-  include: {
-    price: { include: { product: true } };
-    lead: true;
-    briefing: true;
-    upsells: true;
-  };
-}>;
-
 export const getOrdersPageData = async (
   sp: OrdersSearchParamsRecord,
 ): Promise<OrdersPageData> => {
@@ -38,7 +27,7 @@ export const getOrdersPageData = async (
 
   const skip = (page - 1) * PAGE_SIZE;
 
-  const where: Prisma.OrderWhereInput = {
+  const where = {
     ...(status !== 'ALL' ? { status: status as any } : {}),
     ...(q
       ? {
@@ -78,11 +67,10 @@ export const getOrdersPageData = async (
     }),
   ]);
 
-  const rows: OrderVM[] = (orders as OrderWithIncludes[]).map((order) => {
+  const rows: OrderVM[] = orders.map((order) => {
     const planName = order.price?.product?.name ?? '—';
     const totalLabel = formatBRL(order.amountTotal ?? 0);
 
-    // ✅ mantém o valor técnico para não quebrar tipagem
     const onboardingStatus: OrderVM['onboardingStatus'] =
       order.briefing?.status === 'SUBMITTED'
         ? 'SUBMITTED'
@@ -103,7 +91,6 @@ export const getOrdersPageData = async (
 
     const customerEmail = order.customerEmail ?? order.lead?.email ?? null;
 
-    // ✅ WhatsApp vem do onboarding (briefing.data), não do lead
     const onboardingPhone = extractOnboardingPhone(order.briefing);
 
     return {
