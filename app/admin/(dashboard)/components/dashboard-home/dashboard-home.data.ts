@@ -133,7 +133,7 @@ export const getDashboardHomeData = async (): Promise<DashboardHomeData> => {
     (l: { id: string }) => (leadWorkStatusById.get(l.id) ?? 'TODO') !== 'DONE',
   );
 
-  const readyIdsRaw = readyForProductionRaw.map((o) => o.id);
+  const readyIdsRaw = readyForProductionRaw.map((o: { id: string }) => o.id);
 
   const readyDoneRows = readyIdsRaw.length
     ? await prisma.adminWorkItem.findMany({
@@ -151,7 +151,7 @@ export const getDashboardHomeData = async (): Promise<DashboardHomeData> => {
   );
 
   const readyForProduction = readyForProductionRaw
-    .filter((o) => !readyDoneSet.has(o.id))
+    .filter((o: { id: string }) => !readyDoneSet.has(o.id))
     .slice(0, READY_PAGE_SIZE);
 
   const pendingUpsellRows = await prisma.upsellPurchase.findMany({
@@ -227,7 +227,8 @@ export const getDashboardHomeData = async (): Promise<DashboardHomeData> => {
   );
 
   const upsells = upsellsRaw.filter(
-    (u) => (upsellStatusById.get(u.orderId) ?? 'TODO') !== 'DONE',
+    (u: { orderId: string }) =>
+      (upsellStatusById.get(u.orderId) ?? 'TODO') !== 'DONE',
   );
 
   const revenue7Cents = revenue7._sum.amountTotal ?? 0;
