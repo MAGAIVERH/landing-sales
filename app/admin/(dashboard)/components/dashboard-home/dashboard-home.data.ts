@@ -210,13 +210,22 @@ export const getDashboardHomeData = async (): Promise<DashboardHomeData> => {
       })
     : [];
 
-  const notContracted = notContractedHostingOrders.map((o) => ({
-    orderId: o.id,
-    email: o.customerEmail ?? o.lead?.email ?? 'sem email',
-    product: o.price.product.name,
-    createdAt: (o.paidAt ?? o.createdAt).toISOString().slice(0, 10),
-    tag: 'NOT_CONTRACTED' as const,
-  }));
+  const notContracted = notContractedHostingOrders.map(
+    (o: {
+      id: string;
+      customerEmail: string | null;
+      paidAt: Date | null;
+      createdAt: Date;
+      lead: { email: string | null } | null;
+      price: { product: { name: string } };
+    }) => ({
+      orderId: o.id,
+      email: o.customerEmail ?? o.lead?.email ?? 'sem email',
+      product: o.price.product.name,
+      createdAt: (o.paidAt ?? o.createdAt).toISOString().slice(0, 10),
+      tag: 'NOT_CONTRACTED' as const,
+    }),
+  );
 
   const upsellsRaw = [...pending, ...notContracted];
 
