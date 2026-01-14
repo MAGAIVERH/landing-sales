@@ -113,7 +113,7 @@ export const getDashboardHomeData = async (): Promise<DashboardHomeData> => {
     }),
   ]);
 
-  const recentLeadIds = recentLeads.map((l) => l.id);
+  const recentLeadIds = recentLeads.map((l: { id: string }) => l.id);
 
   const leadWorkItems = recentLeadIds.length
     ? await prisma.adminWorkItem.findMany({
