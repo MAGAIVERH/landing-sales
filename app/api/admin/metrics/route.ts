@@ -4,6 +4,12 @@ import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
 
+type DailyRow = {
+  day: Date;
+  revenue_cents: bigint;
+  orders_count: bigint;
+};
+
 const parseDay = (value: string | null) => {
   if (!value) return null;
   // Espera "YYYY-MM-DD"
@@ -110,9 +116,7 @@ export const GET = async (req: Request) => {
   const upsellCount = upsellTotals._count._all ?? 0;
 
   // 3) Série diária (Orders) via SQL, porque Prisma não faz date_trunc bem
-  const daily = await prisma.$queryRaw<
-    Array<{ day: Date; revenue_cents: bigint; orders_count: bigint }>
-  >`
+  const daily = (await prisma.$queryRaw`
     SELECT
       date_trunc('day', "paidAt") AS day,
       COALESCE(SUM("amountTotal"), 0) AS revenue_cents,
@@ -123,7 +127,7 @@ export const GET = async (req: Request) => {
       AND "paidAt" < ${toExclusive}
     GROUP BY 1
     ORDER BY 1 ASC;
-  `;
+  `) as DailyRow[];
 
   return NextResponse.json({
     range: {
@@ -137,7 +141,7 @@ export const GET = async (req: Request) => {
     avgTicketCents,
     upsellRevenueCents,
     upsellCount,
-    daily: daily.map((d) => ({
+    daily: daily.map((d: DailyRow) => ({
       date: d.day.toISOString().slice(0, 10),
       revenueCents: Number(d.revenue_cents),
       ordersCount: Number(d.orders_count),
