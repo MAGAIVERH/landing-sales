@@ -1,14 +1,10 @@
-import type { Prisma } from '@prisma/client';
+import type { getOrderDetailsData } from './order-details.data';
 
 export type OrderDetailsParams = Promise<{ orderId: string }>;
 
-export type OrderWithIncludes = Prisma.OrderGetPayload<{
-  include: {
-    lead: true;
-    briefing: true;
-    price: { include: { product: true } };
-  };
-}>;
+export type OrderWithIncludes = NonNullable<
+  Awaited<ReturnType<typeof getOrderDetailsData>>
+>;
 
 export type OrderDetailsPageProps = {
   order: OrderWithIncludes;
