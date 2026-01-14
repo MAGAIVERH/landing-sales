@@ -1,0 +1,188 @@
+import { CheckCircle2, MessageCircle } from 'lucide-react';
+
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+
+import type {
+  LeadItem,
+  Split,
+  UpdateStatusFn,
+} from '../workboard-client.types';
+import { Row } from '../workboard-client.ui';
+import {
+  leadStatusBadgeClass,
+  leadStatusLabel,
+} from '../workboard-client.styles';
+
+type Props = {
+  split: Split<LeadItem>;
+  expanded: boolean;
+  maxCollapsed: number;
+  maxExpanded: number;
+  onToggleExpanded: () => void;
+  onUpdateStatus: UpdateStatusFn;
+};
+
+export const WorkboardLeadsSection = ({
+  split,
+  expanded,
+  maxCollapsed,
+  maxExpanded,
+  onToggleExpanded,
+  onUpdateStatus,
+}: Props) => {
+  const sliceForView = <T,>(items: T[]) =>
+    items.slice(0, expanded ? maxExpanded : maxCollapsed);
+
+  const showToggle = (len: number) => len > maxCollapsed;
+
+  return (
+    <Card className='rounded-2xl border bg-card shadow-sm'>
+      <div className='px-5 '>
+        <div className='flex items-start justify-between gap-3'>
+          <div>
+            <p className='text-sm font-semibold'>3) Leads</p>
+            <p className='mt-1 text-xs text-muted-foreground'>
+              Triagem e direcionamento.
+            </p>
+          </div>
+          <Badge variant='secondary'>
+            Ativos: {split.active.length} • Concluídos: {split.done.length}
+          </Badge>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className='px-5 py-2 sm:py-3'>
+        <div className='grid gap-2'>
+          {split.active.length === 0 ? (
+            <p className='text-sm text-muted-foreground'>Nenhum item ativo.</p>
+          ) : (
+            sliceForView(split.active).map((l) => (
+              <Row
+                key={l.refId}
+                left={
+                  <>
+                    <p className='truncate text-sm font-medium'>
+                      {l.name} • {l.email}
+                    </p>
+
+                    <p className='mt-1 line-clamp-1 text-xs text-muted-foreground wrap-break-word'>
+                      {l.message} • Origem: {l.landingPath}
+                    </p>
+                  </>
+                }
+                right={
+                  <div className='flex items-center gap-2'>
+                    <Badge
+                      variant='outline'
+                      className={[
+                        leadStatusBadgeClass(l.leadStatus),
+                        'min-w-26 justify-center',
+                      ].join(' ')}
+                    >
+                      {leadStatusLabel[l.leadStatus]}
+                    </Badge>
+
+                    {l.whatsappLink ? (
+                      <a href={l.whatsappLink} target='_blank' rel='noreferrer'>
+                        <Button className='h-9 gap-2' variant='outline'>
+                          <MessageCircle className='h-4 w-4' />
+                          WhatsApp
+                        </Button>
+                      </a>
+                    ) : (
+                      <Button className='h-9 gap-2' variant='outline' disabled>
+                        <MessageCircle className='h-4 w-4' />
+                        WhatsApp
+                      </Button>
+                    )}
+
+                    <Button
+                      className='h-9 gap-2'
+                      onClick={() => onUpdateStatus('LEAD', l.refId, 'DONE')}
+                    >
+                      <CheckCircle2 className='h-4 w-4' />
+                      Feito
+                    </Button>
+                  </div>
+                }
+              />
+            ))
+          )}
+
+          {showToggle(split.active.length) ? (
+            <div className='flex justify-end'>
+              <Button
+                variant='outline'
+                className='h-9'
+                onClick={onToggleExpanded}
+              >
+                {expanded ? 'Ver menos' : 'Ver todos'}
+              </Button>
+            </div>
+          ) : null}
+
+          {expanded && split.active.length > maxExpanded ? (
+            <p className='text-xs text-muted-foreground'>
+              Mostrando {maxExpanded} de {split.active.length}.
+            </p>
+          ) : null}
+
+          {split.done.length > 0 ? (
+            <div className='mt-3'>
+              <p className='mb-2 text-xs font-medium text-muted-foreground'>
+                Concluídos
+              </p>
+
+              <div className='grid gap-2'>
+                {split.done.map((l) => (
+                  <Row
+                    key={l.refId}
+                    muted
+                    left={
+                      <>
+                        <p className='truncate text-sm font-medium'>
+                          {l.name} • {l.email}
+                        </p>
+                        <p className='mt-1 line-clamp-1 text-xs text-muted-foreground wrap-break-word'>
+                          {l.message} • Origem: {l.landingPath}
+                        </p>
+                      </>
+                    }
+                    right={
+                      <div className='flex items-center gap-2'>
+                        <Badge
+                          variant='outline'
+                          className={[
+                            leadStatusBadgeClass(l.leadStatus),
+                            'min-w-26 justify-center',
+                          ].join(' ')}
+                        >
+                          {leadStatusLabel[l.leadStatus]}
+                        </Badge>
+
+                        <Button
+                          className='h-9'
+                          variant='outline'
+                          onClick={() =>
+                            onUpdateStatus('LEAD', l.refId, 'TODO')
+                          }
+                        >
+                          Reabrir
+                        </Button>
+                      </div>
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </Card>
+  );
+};
