@@ -71,10 +71,10 @@
 
 // const MAX_COLLAPSED = 4;
 
-// // (mantém o comportamento antigo para as outras abas)
-// const PAGE_SIZE_DEFAULT = 4;
+// const STEP_DEFAULT = 4;
+// const MAX_VISIBLE_DEFAULT = 20;
 
-// // ✅ apenas upsell: máximo 20 por página quando expandido
+// const PAGE_SIZE_DEFAULT = 4;
 // const PAGE_SIZE_UPSELL = 20;
 
 // const Pill = ({
@@ -174,7 +174,6 @@
 //   );
 // };
 
-// // ✅ badges do upsell no mesmo padrão visual da Operação
 // const upsellBadge = (tag: UpsellItem['tag']) => {
 //   if (tag === 'PENDING') {
 //     return {
@@ -192,12 +191,19 @@
 // export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
 //   const [tab, setTab] = React.useState<TabKey>('ready');
 //   const [open, setOpen] = React.useState(false);
-//   const [expanded, setExpanded] = React.useState(false);
-//   const [page, setPage] = React.useState(0);
+
+//   const [expandedUpsell, setExpandedUpsell] = React.useState(false);
+//   const [pageUpsell, setPageUpsell] = React.useState(0);
+
+//   const [visibleCount, setVisibleCount] = React.useState(MAX_COLLAPSED);
+//   const [pageDefault, setPageDefault] = React.useState(0);
 
 //   React.useEffect(() => {
-//     setExpanded(false);
-//     setPage(0);
+//     setVisibleCount(MAX_COLLAPSED);
+//     setPageDefault(0);
+
+//     setExpandedUpsell(false);
+//     setPageUpsell(0);
 //   }, [tab]);
 
 //   const searchParams = useSearchParams();
@@ -240,55 +246,92 @@
 
 //   const activeMeta = tabs.find((t) => t.key === tab)!;
 
-//   const showToggle = (len: number) => len > MAX_COLLAPSED;
+//   const canPaginateDefault = (len: number) =>
+//     visibleCount >= MAX_VISIBLE_DEFAULT && len > MAX_VISIBLE_DEFAULT;
 
-//   const pageSizeForTab = (t: TabKey) =>
-//     t === 'upsell' ? PAGE_SIZE_UPSELL : PAGE_SIZE_DEFAULT;
+//   const totalPagesDefault = (len: number) =>
+//     Math.max(1, Math.ceil(len / MAX_VISIBLE_DEFAULT));
 
-//   const totalPages = (len: number, t: TabKey) =>
-//     Math.max(1, Math.ceil(len / pageSizeForTab(t)));
-
-//   const goPrev = (len: number, t: TabKey) =>
-//     setPage((p) => Math.max(0, Math.min(p - 1, totalPages(len, t) - 1)));
-
-//   const goNext = (len: number, t: TabKey) =>
-//     setPage((p) => Math.max(0, Math.min(p + 1, totalPages(len, t) - 1)));
-
-//   const sliceForView = <T,>(items: T[], t: TabKey) => {
-//     if (!expanded) return items.slice(0, MAX_COLLAPSED);
-
-//     const size = pageSizeForTab(t);
-//     const start = page * size;
-//     return items.slice(start, start + size);
+//   const sliceForDefaultTab = <T,>(items: T[]) => {
+//     const start = canPaginateDefault(items.length)
+//       ? pageDefault * MAX_VISIBLE_DEFAULT
+//       : 0;
+//     return items.slice(start, start + visibleCount);
 //   };
 
-//   const footerWithOrders = (len: number, t: TabKey) => {
+//   const canShowMoreDefault = (len: number) =>
+//     len > visibleCount && visibleCount < MAX_VISIBLE_DEFAULT;
+
+//   const canShowLessDefault = () => visibleCount > MAX_COLLAPSED;
+
+//   const handleShowMoreDefault = () => {
+//     setVisibleCount((v) => Math.min(v + STEP_DEFAULT, MAX_VISIBLE_DEFAULT));
+//   };
+
+//   const handleShowLessDefault = () => {
+//     setVisibleCount((v) => Math.max(v - STEP_DEFAULT, MAX_COLLAPSED));
+//     setPageDefault(0);
+//   };
+
+//   const goPrevDefault = (len: number) =>
+//     setPageDefault((p) =>
+//       Math.max(0, Math.min(p - 1, totalPagesDefault(len) - 1)),
+//     );
+
+//   const goNextDefault = (len: number) =>
+//     setPageDefault((p) =>
+//       Math.max(0, Math.min(p + 1, totalPagesDefault(len) - 1)),
+//     );
+
+//   const footerDefaultWithOrders = (len: number) => {
+//     const showPager = canPaginateDefault(len) && totalPagesDefault(len) > 1;
+
 //     return (
-//       <div className='flex items-center justify-between gap-2'>
-//         <div>
-//           {showToggle(len) ? (
-//             <Button
-//               type='button'
-//               variant='outline'
-//               className='h-9'
-//               onClick={() => {
-//                 setExpanded((v) => !v);
-//                 setPage(0);
-//               }}
-//             >
-//               {expanded ? 'Ver menos' : 'Ver todos'}
+//       <div className='grid gap-2'>
+//         <div className='flex items-center justify-between gap-2'>
+//           <div className='flex items-center gap-2'>
+//             {len > MAX_COLLAPSED ? (
+//               <>
+//                 {canShowMoreDefault(len) ? (
+//                   <Button
+//                     type='button'
+//                     variant='outline'
+//                     className='h-9'
+//                     onClick={handleShowMoreDefault}
+//                   >
+//                     Ver mais
+//                   </Button>
+//                 ) : null}
+
+//                 {canShowLessDefault() ? (
+//                   <Button
+//                     type='button'
+//                     variant='outline'
+//                     className='h-9'
+//                     onClick={handleShowLessDefault}
+//                   >
+//                     Ver menos
+//                   </Button>
+//                 ) : null}
+//               </>
+//             ) : null}
+//           </div>
+
+//           <Link href='/admin/orders'>
+//             <Button variant='outline' className='h-9 gap-2'>
+//               Ver pedidos <ArrowRight className='h-4 w-4' />
 //             </Button>
-//           ) : null}
+//           </Link>
 //         </div>
 
-//         {expanded && totalPages(len, t) > 1 ? (
-//           <div className='flex items-center gap-2'>
+//         {showPager ? (
+//           <div className='flex items-center justify-end gap-2'>
 //             <Button
 //               type='button'
 //               variant='outline'
 //               className='h-9'
-//               disabled={page <= 0}
-//               onClick={() => goPrev(len, t)}
+//               disabled={pageDefault <= 0}
+//               onClick={() => goPrevDefault(len)}
 //             >
 //               Anterior
 //             </Button>
@@ -297,14 +340,150 @@
 //               type='button'
 //               variant='outline'
 //               className='h-9'
-//               disabled={page >= totalPages(len, t) - 1}
-//               onClick={() => goNext(len, t)}
+//               disabled={pageDefault >= totalPagesDefault(len) - 1}
+//               onClick={() => goNextDefault(len)}
 //             >
 //               Próximo
 //             </Button>
 
 //             <span className='text-xs text-muted-foreground'>
-//               {page + 1}/{totalPages(len, t)}
+//               {pageDefault + 1}/{totalPagesDefault(len)}
+//             </span>
+//           </div>
+//         ) : null}
+//       </div>
+//     );
+//   };
+
+//   const footerDefaultLeadsOnly = (len: number) => {
+//     const showPager = canPaginateDefault(len) && totalPagesDefault(len) > 1;
+
+//     return (
+//       <div className='grid gap-2'>
+//         <div className='flex items-center justify-end gap-2'>
+//           {len > MAX_COLLAPSED ? (
+//             <>
+//               {canShowMoreDefault(len) ? (
+//                 <Button
+//                   type='button'
+//                   variant='outline'
+//                   className='h-9'
+//                   onClick={handleShowMoreDefault}
+//                 >
+//                   Ver mais
+//                 </Button>
+//               ) : null}
+
+//               {canShowLessDefault() ? (
+//                 <Button
+//                   type='button'
+//                   variant='outline'
+//                   className='h-9'
+//                   onClick={handleShowLessDefault}
+//                 >
+//                   Ver menos
+//                 </Button>
+//               ) : null}
+//             </>
+//           ) : null}
+//         </div>
+
+//         {showPager ? (
+//           <div className='flex items-center justify-end gap-2'>
+//             <Button
+//               type='button'
+//               variant='outline'
+//               className='h-9'
+//               disabled={pageDefault <= 0}
+//               onClick={() => goPrevDefault(len)}
+//             >
+//               Anterior
+//             </Button>
+
+//             <Button
+//               type='button'
+//               variant='outline'
+//               className='h-9'
+//               disabled={pageDefault >= totalPagesDefault(len) - 1}
+//               onClick={() => goNextDefault(len)}
+//             >
+//               Próximo
+//             </Button>
+
+//             <span className='text-xs text-muted-foreground'>
+//               {pageDefault + 1}/{totalPagesDefault(len)}
+//             </span>
+//           </div>
+//         ) : null}
+//       </div>
+//     );
+//   };
+
+//   const showToggleUpsell = (len: number) => len > MAX_COLLAPSED;
+
+//   const totalPagesUpsell = (len: number) =>
+//     Math.max(1, Math.ceil(len / PAGE_SIZE_UPSELL));
+
+//   const goPrevUpsell = (len: number) =>
+//     setPageUpsell((p) =>
+//       Math.max(0, Math.min(p - 1, totalPagesUpsell(len) - 1)),
+//     );
+
+//   const goNextUpsell = (len: number) =>
+//     setPageUpsell((p) =>
+//       Math.max(0, Math.min(p + 1, totalPagesUpsell(len) - 1)),
+//     );
+
+//   const sliceForUpsell = <T,>(items: T[]) => {
+//     if (!expandedUpsell) return items.slice(0, MAX_COLLAPSED);
+
+//     const start = pageUpsell * PAGE_SIZE_UPSELL;
+//     return items.slice(start, start + PAGE_SIZE_UPSELL);
+//   };
+
+//   const footerUpsell = (len: number) => {
+//     return (
+//       <div className='flex items-center justify-between gap-2'>
+//         <div>
+//           {showToggleUpsell(len) ? (
+//             <Button
+//               type='button'
+//               variant='outline'
+//               className='h-9'
+//               onClick={() => {
+//                 setExpandedUpsell((v) => !v);
+//                 setPageUpsell(0);
+//               }}
+//             >
+//               {expandedUpsell ? 'Ver menos' : 'Ver todos'}
+//             </Button>
+//           ) : null}
+//         </div>
+
+//         {expandedUpsell && totalPagesUpsell(len) > 1 ? (
+//           <div className='flex items-center gap-2'>
+//             <Button
+//               type='button'
+//               variant='outline'
+//               className='h-9'
+//               disabled={pageUpsell <= 0}
+//               onClick={() => goPrevUpsell(len)}
+//             >
+//               Anterior
+//             </Button>
+
+//             <Button
+//               type='button'
+//               variant='outline'
+//               className='h-9'
+//               disabled={pageUpsell >= totalPagesUpsell(len) - 1}
+//               onClick={() => goNextUpsell(len)}
+//             >
+//               Próximo
+//             </Button>
+
+//             <span className='text-xs text-muted-foreground'>
+//               {pageUpsell + 1}/{totalPagesUpsell(len)}
 //             </span>
 //           </div>
 //         ) : null}
@@ -318,30 +497,13 @@
 //     );
 //   };
 
-//   const footerLeadsOnly = (len: number) => {
-//     return (
-//       <div className='flex justify-end'>
-//         {showToggle(len) ? (
-//           <Button
-//             type='button'
-//             variant='outline'
-//             className='h-9'
-//             onClick={() => setExpanded((v) => !v)}
-//           >
-//             {expanded ? 'Ver menos' : 'Ver todos'}
-//           </Button>
-//         ) : null}
-//       </div>
-//     );
-//   };
-
 //   const content = (
 //     <div className='grid gap-3 mt-6'>
 //       {tab === 'ready' ? (
 //         <ListShell
 //           title='Prontos para produção'
 //           subtitle={activeMeta.hint}
-//           footer={footerWithOrders(ready.length, 'ready')}
+//           footer={footerDefaultWithOrders(ready.length)}
 //         >
 //           {ready.length === 0 ? (
 //             <div className='rounded-xl border bg-muted/20 px-3 py-3'>
@@ -351,7 +513,7 @@
 //             </div>
 //           ) : (
 //             <div className='grid gap-2'>
-//               {sliceForView(ready, 'ready').map((o) => (
+//               {sliceForDefaultTab(ready).map((o) => (
 //                 <Row
 //                   key={o.orderId}
 //                   title={`${o.email} • ${o.product}`}
@@ -372,9 +534,9 @@
 
 //       {tab === 'stalled' ? (
 //         <ListShell
-//           title='Onboarding parado (2+ dias)'
+//           title='Onboarding parados ou incompletos'
 //           subtitle={activeMeta.hint}
-//           footer={footerWithOrders(stalled.length, 'stalled')}
+//           footer={footerDefaultWithOrders(stalled.length)}
 //         >
 //           {stalled.length === 0 ? (
 //             <div className='rounded-xl border bg-muted/20 px-3 py-3'>
@@ -384,7 +546,7 @@
 //             </div>
 //           ) : (
 //             <div className='grid gap-2'>
-//               {sliceForView(stalled, 'stalled').map((b) => (
+//               {sliceForDefaultTab(stalled).map((b) => (
 //                 <Row
 //                   key={b.orderId}
 //                   title={`${b.email} • ${b.product}`}
@@ -433,12 +595,11 @@
 //         </ListShell>
 //       ) : null}
 
-//       {/* ✅ UPSSELL: badges padronizadas + 20 por página quando expandido */}
 //       {tab === 'upsell' ? (
 //         <ListShell
 //           title='Upsell hosting (informativo)'
 //           subtitle={activeMeta.hint}
-//           footer={footerWithOrders(upsells.length, 'upsell')}
+//           footer={footerUpsell(upsells.length)}
 //         >
 //           {upsells.length === 0 ? (
 //             <div className='rounded-xl border bg-muted/20 px-3 py-3'>
@@ -448,7 +609,7 @@
 //             </div>
 //           ) : (
 //             <div className='grid gap-2'>
-//               {sliceForView(upsells, 'upsell').map((u) => {
+//               {sliceForUpsell(upsells).map((u) => {
 //                 const b = upsellBadge(u.tag);
 
 //                 return (
@@ -487,7 +648,7 @@
 //         <ListShell
 //           title='Leads novos'
 //           subtitle={activeMeta.hint}
-//           footer={footerLeadsOnly(leads.length)}
+//           footer={footerDefaultLeadsOnly(leads.length)}
 //         >
 //           {leads.length === 0 ? (
 //             <div className='rounded-xl border bg-muted/20 px-3 py-3'>
@@ -497,7 +658,7 @@
 //             </div>
 //           ) : (
 //             <div className='grid gap-2'>
-//               {sliceForView(leads, 'leads').map((l) => (
+//               {sliceForDefaultTab(leads).map((l) => (
 //                 <Row
 //                   key={l.id}
 //                   title={`${l.name} • ${l.email}`}
@@ -616,20 +777,21 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
+  ArrowRight,
   CheckCircle2,
   Clock,
   CreditCard,
-  Sparkles,
-  MessageCircle,
-  ArrowRight,
   LayoutGrid,
   Mail,
+  MessageCircle,
+  Sparkles,
 } from 'lucide-react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
   Sheet,
@@ -639,168 +801,30 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 
-import { useSearchParams } from 'next/navigation';
 import { isTabKey } from '@/lib/admin-workflow';
 
-type ReadyItem = {
-  orderId: string;
-  email: string;
-  product: string;
-  total: string;
-};
+import type {
+  Props,
+  TabKey,
+  UpsellItem,
+} from './workflow-carousel/workflow-carousel.types';
 
-type StalledItem = {
-  orderId: string;
-  email: string;
-  product: string;
-  updatedAt: string;
-  whatsappLink?: string | null; // mailto
-};
+import {
+  MAX_COLLAPSED,
+  MAX_VISIBLE_DEFAULT,
+  PAGE_SIZE_UPSELL,
+  STEP_DEFAULT,
+  canPaginateDefault,
+  canShowLessDefault,
+  canShowMoreDefault,
+  sliceForDefaultTab,
+  sliceForUpsell,
+  totalPagesDefault,
+  totalPagesUpsell,
+  upsellBadge,
+} from './workflow-carousel/workflow-carousel.utils';
 
-type UpsellItem = {
-  orderId: string;
-  email: string;
-  product: string;
-  createdAt: string;
-  tag: 'PENDING' | 'NOT_CONTRACTED';
-};
-
-type LeadItem = {
-  id: string;
-  name: string;
-  email: string;
-  message: string;
-  landingPath: string;
-  whatsappLink?: string | null;
-};
-
-type Props = {
-  ready: ReadyItem[];
-  stalled: StalledItem[];
-  upsells: UpsellItem[];
-  leads: LeadItem[];
-};
-
-type TabKey = 'ready' | 'stalled' | 'upsell' | 'leads';
-
-const MAX_COLLAPSED = 4;
-
-const STEP_DEFAULT = 4;
-const MAX_VISIBLE_DEFAULT = 20;
-
-const PAGE_SIZE_DEFAULT = 4;
-const PAGE_SIZE_UPSELL = 20;
-
-const Pill = ({
-  active,
-  onClick,
-  icon: Icon,
-  title,
-  count,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ElementType;
-  title: string;
-  count: number;
-}) => {
-  return (
-    <button
-      type='button'
-      onClick={onClick}
-      className={[
-        'flex items-center gap-2 rounded-full border px-3 py-2 text-sm transition-colors',
-        'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-        'focus-visible:ring-offset-background',
-        'active:translate-y-0',
-        'disabled:pointer-events-none disabled:opacity-50',
-        active
-          ? 'bg-primary text-primary-foreground border-primary/30 hover:bg-primary/90 active:bg-primary/90 focus:bg-primary/90'
-          : 'bg-background hover:bg-muted/40 active:bg-muted/40 focus:bg-muted/40',
-        '[-webkit-tap-highlight-color:transparent]',
-      ].join(' ')}
-    >
-      <Icon className='h-4 w-4' />
-      <span className='font-medium'>{title}</span>
-      <Badge
-        variant={active ? 'secondary' : 'outline'}
-        className={active ? 'bg-background/15 text-primary-foreground' : ''}
-      >
-        {count}
-      </Badge>
-    </button>
-  );
-};
-
-const ListShell = ({
-  title,
-  subtitle,
-  children,
-  footer,
-}: {
-  title: string;
-  subtitle: string;
-  children: React.ReactNode;
-  footer?: React.ReactNode;
-}) => {
-  return (
-    <Card className='rounded-2xl border bg-card shadow-sm'>
-      <div className='px-4 py-2 sm:px-5 sm:py-2'>
-        <div className='flex items-start justify-between gap-3'>
-          <div>
-            <p className='text-sm font-semibold'>{title}</p>
-            <p className='mt-1 text-xs text-muted-foreground'>{subtitle}</p>
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className='px-4 py-2 sm:px-5 '>
-        {children}
-        {footer ? <div className='mt-4 flex justify-end'>{footer}</div> : null}
-      </div>
-    </Card>
-  );
-};
-
-const Row = ({
-  title,
-  subtitle,
-  right,
-}: {
-  title: string;
-  subtitle: string;
-  right: React.ReactNode;
-}) => {
-  return (
-    <div className='flex items-start justify-between gap-3 rounded-xl border bg-background px-3 py-3'>
-      <div className='min-w-0 flex-1'>
-        <p className='truncate text-sm font-medium'>{title}</p>
-
-        <p className='mt-0.5 line-clamp-2 text-xs text-muted-foreground wrap-break-word '>
-          {subtitle}
-        </p>
-      </div>
-
-      <div className='shrink-0'>{right}</div>
-    </div>
-  );
-};
-
-const upsellBadge = (tag: UpsellItem['tag']) => {
-  if (tag === 'PENDING') {
-    return {
-      label: 'Pendente',
-      className: 'border-amber-200 bg-amber-50 text-amber-900',
-    };
-  }
-
-  return {
-    label: 'Não contratou',
-    className: 'border-muted bg-muted/40 text-muted-foreground',
-  };
-};
+import { ListShell, Pill, Row } from './workflow-carousel/workflow-carousel.ui';
 
 export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
   const [tab, setTab] = React.useState<TabKey>('ready');
@@ -860,24 +884,6 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
 
   const activeMeta = tabs.find((t) => t.key === tab)!;
 
-  const canPaginateDefault = (len: number) =>
-    visibleCount >= MAX_VISIBLE_DEFAULT && len > MAX_VISIBLE_DEFAULT;
-
-  const totalPagesDefault = (len: number) =>
-    Math.max(1, Math.ceil(len / MAX_VISIBLE_DEFAULT));
-
-  const sliceForDefaultTab = <T,>(items: T[]) => {
-    const start = canPaginateDefault(items.length)
-      ? pageDefault * MAX_VISIBLE_DEFAULT
-      : 0;
-    return items.slice(start, start + visibleCount);
-  };
-
-  const canShowMoreDefault = (len: number) =>
-    len > visibleCount && visibleCount < MAX_VISIBLE_DEFAULT;
-
-  const canShowLessDefault = () => visibleCount > MAX_COLLAPSED;
-
   const handleShowMoreDefault = () => {
     setVisibleCount((v) => Math.min(v + STEP_DEFAULT, MAX_VISIBLE_DEFAULT));
   };
@@ -898,7 +904,8 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
     );
 
   const footerDefaultWithOrders = (len: number) => {
-    const showPager = canPaginateDefault(len) && totalPagesDefault(len) > 1;
+    const showPager =
+      canPaginateDefault(len, visibleCount) && totalPagesDefault(len) > 1;
 
     return (
       <div className='grid gap-2'>
@@ -906,7 +913,7 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
           <div className='flex items-center gap-2'>
             {len > MAX_COLLAPSED ? (
               <>
-                {canShowMoreDefault(len) ? (
+                {canShowMoreDefault(len, visibleCount) ? (
                   <Button
                     type='button'
                     variant='outline'
@@ -917,7 +924,7 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
                   </Button>
                 ) : null}
 
-                {canShowLessDefault() ? (
+                {canShowLessDefault(visibleCount) ? (
                   <Button
                     type='button'
                     variant='outline'
@@ -970,14 +977,15 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
   };
 
   const footerDefaultLeadsOnly = (len: number) => {
-    const showPager = canPaginateDefault(len) && totalPagesDefault(len) > 1;
+    const showPager =
+      canPaginateDefault(len, visibleCount) && totalPagesDefault(len) > 1;
 
     return (
       <div className='grid gap-2'>
         <div className='flex items-center justify-end gap-2'>
           {len > MAX_COLLAPSED ? (
             <>
-              {canShowMoreDefault(len) ? (
+              {canShowMoreDefault(len, visibleCount) ? (
                 <Button
                   type='button'
                   variant='outline'
@@ -988,7 +996,7 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
                 </Button>
               ) : null}
 
-              {canShowLessDefault() ? (
+              {canShowLessDefault(visibleCount) ? (
                 <Button
                   type='button'
                   variant='outline'
@@ -1033,11 +1041,6 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
     );
   };
 
-  const showToggleUpsell = (len: number) => len > MAX_COLLAPSED;
-
-  const totalPagesUpsell = (len: number) =>
-    Math.max(1, Math.ceil(len / PAGE_SIZE_UPSELL));
-
   const goPrevUpsell = (len: number) =>
     setPageUpsell((p) =>
       Math.max(0, Math.min(p - 1, totalPagesUpsell(len) - 1)),
@@ -1048,18 +1051,11 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
       Math.max(0, Math.min(p + 1, totalPagesUpsell(len) - 1)),
     );
 
-  const sliceForUpsell = <T,>(items: T[]) => {
-    if (!expandedUpsell) return items.slice(0, MAX_COLLAPSED);
-
-    const start = pageUpsell * PAGE_SIZE_UPSELL;
-    return items.slice(start, start + PAGE_SIZE_UPSELL);
-  };
-
   const footerUpsell = (len: number) => {
     return (
       <div className='flex items-center justify-between gap-2'>
         <div>
-          {showToggleUpsell(len) ? (
+          {len > MAX_COLLAPSED ? (
             <Button
               type='button'
               variant='outline'
@@ -1127,7 +1123,7 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
             </div>
           ) : (
             <div className='grid gap-2'>
-              {sliceForDefaultTab(ready).map((o) => (
+              {sliceForDefaultTab(ready, visibleCount, pageDefault).map((o) => (
                 <Row
                   key={o.orderId}
                   title={`${o.email} • ${o.product}`}
@@ -1160,50 +1156,52 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
             </div>
           ) : (
             <div className='grid gap-2'>
-              {sliceForDefaultTab(stalled).map((b) => (
-                <Row
-                  key={b.orderId}
-                  title={`${b.email} • ${b.product}`}
-                  subtitle={b.updatedAt}
-                  right={
-                    <div className='flex items-center gap-2'>
-                      {b.whatsappLink ? (
-                        <Button
-                          type='button'
-                          className='h-9 gap-2'
-                          variant='outline'
-                          onClick={() => {
-                            window.open(
-                              b.whatsappLink!,
-                              '_blank',
-                              'noopener,noreferrer',
-                            );
-                          }}
-                        >
-                          <Mail className='h-4 w-4' />
-                          E-mail
-                        </Button>
-                      ) : (
-                        <Button
-                          type='button'
-                          className='h-9 gap-2'
-                          variant='outline'
-                          disabled
-                        >
-                          <Mail className='h-4 w-4' />
-                          E-mail
-                        </Button>
-                      )}
+              {sliceForDefaultTab(stalled, visibleCount, pageDefault).map(
+                (b) => (
+                  <Row
+                    key={b.orderId}
+                    title={`${b.email} • ${b.product}`}
+                    subtitle={b.updatedAt}
+                    right={
+                      <div className='flex items-center gap-2'>
+                        {b.whatsappLink ? (
+                          <Button
+                            type='button'
+                            className='h-9 gap-2'
+                            variant='outline'
+                            onClick={() => {
+                              window.open(
+                                b.whatsappLink!,
+                                '_blank',
+                                'noopener,noreferrer',
+                              );
+                            }}
+                          >
+                            <Mail className='h-4 w-4' />
+                            E-mail
+                          </Button>
+                        ) : (
+                          <Button
+                            type='button'
+                            className='h-9 gap-2'
+                            variant='outline'
+                            disabled
+                          >
+                            <Mail className='h-4 w-4' />
+                            E-mail
+                          </Button>
+                        )}
 
-                      <Link href={`/admin/orders/${b.orderId}`}>
-                        <Button className='h-9' variant='outline'>
-                          Ver
-                        </Button>
-                      </Link>
-                    </div>
-                  }
-                />
-              ))}
+                        <Link href={`/admin/orders/${b.orderId}`}>
+                          <Button className='h-9' variant='outline'>
+                            Ver
+                          </Button>
+                        </Link>
+                      </div>
+                    }
+                  />
+                ),
+              )}
             </div>
           )}
         </ListShell>
@@ -1223,8 +1221,8 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
             </div>
           ) : (
             <div className='grid gap-2'>
-              {sliceForUpsell(upsells).map((u) => {
-                const b = upsellBadge(u.tag);
+              {sliceForUpsell(upsells, expandedUpsell, pageUpsell).map((u) => {
+                const b = upsellBadge(u.tag as UpsellItem['tag']);
 
                 return (
                   <Row
@@ -1272,7 +1270,7 @@ export const WorkflowCarousel = ({ ready, stalled, upsells, leads }: Props) => {
             </div>
           ) : (
             <div className='grid gap-2'>
-              {sliceForDefaultTab(leads).map((l) => (
+              {sliceForDefaultTab(leads, visibleCount, pageDefault).map((l) => (
                 <Row
                   key={l.id}
                   title={`${l.name} • ${l.email}`}
